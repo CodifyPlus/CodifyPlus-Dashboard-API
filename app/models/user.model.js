@@ -14,7 +14,9 @@ const User = mongoose.model(
       }
     ],
     status: String,
-    services: [mongoose.Schema.Types.ObjectId],
+    completedServices: [mongoose.Schema.Types.ObjectId],
+    pendingServices: [mongoose.Schema.Types.ObjectId],
+    processServices: [mongoose.Schema.Types.ObjectId],
     firstName: String,
     lastName: String,
     createdAt: {

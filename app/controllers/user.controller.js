@@ -146,7 +146,7 @@ exports.getAllUsernames = (req, res) => {
           label: user.username
         }
       });
-      console.log(usernames)
+      //console.log(usernames)
       res.status(200).send(usernames);
       return;
     }
@@ -154,7 +154,7 @@ exports.getAllUsernames = (req, res) => {
 };
 
 exports.getAllModerators = (req, res) => {
-  User.find({ role: 'MODERATOR' }, "username").exec((err, moderators) => {
+  User.find({ role: { $in: ['MODERATOR', 'ADMIN'] } }, "username").exec((err, moderators) => {
     if (err) {
       res.status(500).send({ message: err });
       return;
@@ -166,7 +166,7 @@ exports.getAllModerators = (req, res) => {
           label: user.username
         }
       });
-      console.log(usernames)
+      //console.log(usernames)
       res.status(200).send(usernames);
       return;
     }

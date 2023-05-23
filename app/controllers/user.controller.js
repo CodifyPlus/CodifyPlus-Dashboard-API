@@ -172,3 +172,51 @@ exports.getAllModerators = (req, res) => {
     }
   });
 };
+
+exports.addNewService = async (req, res) => {
+  const { name, cost, duration, assignedTo, assignedFor } = req.body;
+  console.log(assignedFor, assignedTo)
+  const assignedForDoc = await User.findOne({ username: assignedFor });
+
+  const assignedToDoc = await User.findOne({ username: assignedTo });
+
+  //console.log(assignedForDoc, assignedToDoc)
+
+  const service = new Service({
+    name: req.body.name,
+    cost: req.body.cost,
+    status: "Pending",
+    pathway: [
+      {
+        notification: true,
+        description: "Service has been initiated!",
+        title: "Service initiated!",
+        status: true,
+        index: 0,
+      }
+    ],
+    duration: req.body.duration,
+    assignedFor: {
+      username: assignedForDoc.username,
+      userId: assignedForDoc._id,
+      email: assignedForDoc.email,
+    },
+    assignedTo: {
+      username: assignedToDoc.username,
+      userId: assignedToDoc._id,
+      email: assignedToDoc.email,
+    },
+    notes: [],
+  });
+
+  service.save((err, service) => {
+    if (err) {
+      res.status(500).send({ message: err });
+      return;
+    }
+    //console.log(service);
+    res.status(200).send(service._id);
+
+  });
+
+};

@@ -29,6 +29,9 @@ const Service = mongoose.model(
       username: String,
       email: String,
     },
+    notes: [{
+      information: String
+    }]
   })
 );
 

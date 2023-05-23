@@ -48,6 +48,9 @@ module.exports = function (app) {
   app.get("/api/getAllModerators", [authJwt.verifyToken, authJwt.isAdmin],
     controller.getAllModerators);
 
+    app.post("/api/addNewService", [authJwt.verifyToken, authJwt.isAdmin],
+    controller.addNewService);
+
 };
 
 

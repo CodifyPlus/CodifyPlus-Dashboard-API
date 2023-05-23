@@ -6,21 +6,29 @@ const Service = mongoose.model(
     cost: String,
     name: String,
     status: String,
-    assignedTo: [mongoose.Schema.Types.ObjectId],
-    pathway: {
-        startedAt: {
-            type: Date,
-            default: Date.now
-        },
-        completedAt: {
-            type: Date,
-            default: Date.now
-        },
-        notification: Boolean,
-        description: String,
-        title: String,
+    assignedTo: {
+      userId: mongoose.Schema.Types.ObjectId,
+      username: String,
+      email: String,
     },
+    pathway: [{
+      startedAt: {
+        type: Date,
+        default: Date.now
+      },
+      notification: Boolean,
+      description: String,
+      title: String,
+      status: Boolean,
+      index: Number,
+    }],
     duration: String,
+    assignedFor:
+    {
+      userId: mongoose.Schema.Types.ObjectId,
+      username: String,
+      email: String,
+    },
   })
 );
 

@@ -28,6 +28,26 @@ module.exports = function (app) {
 
   app.get("/api/getUserStats", [authJwt.verifyToken], controller.getUserStats);
 
+  app.get("/api/getServiceInfo", [authJwt.verifyToken], controller.getServiceInfo);
+
+  app.get("/api/getAllUsers", [authJwt.verifyToken, authJwt.isAdmin],
+    controller.getAllUsers);
+
+  app.post("/api/changeUserRole", [authJwt.verifyToken, authJwt.isAdmin],
+    controller.changeUserRole);
+
+  app.post("/api/addNewUser", [authJwt.verifyToken, authJwt.isAdmin],
+    controller.addNewUser);
+
+  app.get("/api/getAllServices", [authJwt.verifyToken, authJwt.isAdmin],
+    controller.getAllServices);
+
+  app.get("/api/getAllUsernames", [authJwt.verifyToken, authJwt.isAdmin],
+    controller.getAllUsernames);
+
+  app.get("/api/getAllModerators", [authJwt.verifyToken, authJwt.isAdmin],
+    controller.getAllModerators);
+
 };
 
 

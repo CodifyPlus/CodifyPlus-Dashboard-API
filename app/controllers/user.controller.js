@@ -4,6 +4,8 @@ const Service = db.service;
 const MessageBox = db.messageBox;
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
+const { emailTemplate } = require("../templates/emailTemplate");
+const { sendEmail } = require("../config/emailer");
 
 exports.allAccess = (req, res) => {
   res.status(200).send("Public Content.");
@@ -79,7 +81,7 @@ exports.changeUserRole = (req, res) => {
 };
 
 exports.addNewUser = (req, res) => {
-  const { username, email, password, sendEmail } = req.body;
+  const { username, email, password } = req.body;
 
   const user = new User({
     username: req.body.username,
@@ -92,29 +94,41 @@ exports.addNewUser = (req, res) => {
       res.status(500).send({ message: err });
       return;
     }
+    user.role = "USER";
+    user.save(async (err) => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }
+      else {
+        //Send Email Logic
 
-    if (req.body.role) {
-      user.role = req.body.role;
-      user.save(err => {
-        if (err) {
-          res.status(500).send({ message: err });
-          return;
+        if (req.body.sendEmail) {
+          const contentForEmail = `
+            Your account details for logging into the StartupKro Dashboard are:
+            <br>
+            <br>
+            Username: <b>${username}</b>
+            <br>
+            Email: <b>${email}</b>
+            <br>
+            Password: <b>${password}</b>
+            <br>
+            <br>
+            <a href="m.codifyplus.com"> Login Now!</a>
+            `;
+
+          const emailC = emailTemplate(contentForEmail);
+
+          const emailSubject = `StartupKro - Account Created Successfully!`
+
+          await sendEmail(email, emailC, emailSubject);
+
         }
+
         res.send({ message: "User was registered successfully!" });
-      });
-    } else {
-      user.role = "USER";
-      user.save(err => {
-        if (err) {
-          res.status(500).send({ message: err });
-          return;
-        }
-        else {
-          //Send Email Logic
-          res.send({ message: "User was registered successfully!" });
-        }
-      });
-    }
+      }
+    });
   });
 };
 
@@ -216,13 +230,61 @@ exports.addNewService = async (req, res) => {
         res.status(500).send({ message: err });
         return;
       }
-    });;
+    });
+
+    if (req.body.sendEmailToUser) {
+      const contentForEmail = `
+        Thanks for choosing <b>"${service.name}"</b> service
+        <br>
+        <br>
+        Your service details are as follows:
+        <br>
+        Name: ${service.name}
+        <br>
+        Cost: ${service.cost}
+        <br>
+        <br>
+        <a href="m.codifyplus.com"> Login Now!</a>
+        `;
+
+      const emailC = emailTemplate(contentForEmail);
+
+      const emailSubject = `Start-Up Kro - Thanks for choosing Us!`
+
+      await sendEmail(service.assignedFor.email, emailC, emailSubject);
+
+    }
+
+    if (req.body.sendEmailToAssignee) {
+      const contentForEmail = `
+        You have been assigned a new service.
+        <br>
+        <br>
+        Service details are as follows:
+        <br>
+        Service Name: ${service.name}
+        <br>
+        Service Duration: ${service.duration}
+        <br>
+        User's Name: ${service.assignedFor.username}
+        <br>
+        <a href="m.codifyplus.com"> Login Now!</a>
+        `;
+
+      const emailC = emailTemplate(contentForEmail);
+
+      const emailSubject = `Start-Up Kro - New Service Assigned!`
+
+      await sendEmail(service.assignedTo.email, emailC, emailSubject);
+
+    }
 
     res.status(200).send(service._id);
   });
 };
 
 exports.addNote = (req, res) => {
+  console.log(req.body)
   Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
     if (err) {
       res.status(500).send({ message: err });
@@ -237,11 +299,30 @@ exports.addNote = (req, res) => {
 
       service.notes.push(newNote);
 
-      service.save((err, updatedService) => {
+      service.save(async (err, updatedService) => {
         if (err) {
           res.status(500).send({ message: err });
           return;
         } else {
+
+          if (req.body.sendEmail) {
+            const contentForEmail = `
+            A new notification has been added to your service "${updatedService.name}"
+            <br>
+            <br>
+            Notification:
+            <br>
+            ${updatedService.notes[updatedService.notes.length - 1].information}
+            `;
+
+            const emailC = emailTemplate(contentForEmail);
+
+            const emailSubject = `Start-Up Kro - ${updatedService.name} - Notification!`
+
+            await sendEmail(updatedService.assignedFor.email, emailC, emailSubject);
+
+          }
+
           res.status(200).send(updatedService);
           return;
         }
@@ -266,11 +347,30 @@ exports.addTrack = (req, res) => {
 
       service.pathway.push(newTrackPoint);
 
-      service.save((err, updatedService) => {
+      service.save(async (err, updatedService) => {
         if (err) {
           res.status(500).send({ message: err });
           return;
         } else {
+
+          if (req.body.sendEmail) {
+            const contentForEmail = `
+            Check current status for your service <b>"${updatedService.name}"</b>
+            <br>
+            <br>
+            Status: <b>${updatedService.pathway[updatedService.pathway.length - 1].title}</b>
+            <br>
+            Description: ${updatedService.pathway[updatedService.pathway.length - 1].description}
+            `;
+
+            const emailC = emailTemplate(contentForEmail);
+
+            const emailSubject = `Start-Up Kro - ${updatedService.name} - Status Update!`
+
+            await sendEmail(updatedService.assignedFor.email, emailC, emailSubject);
+
+          }
+
           res.status(200).send(updatedService);
           return;
         }

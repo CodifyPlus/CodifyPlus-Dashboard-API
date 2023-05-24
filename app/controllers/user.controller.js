@@ -4,7 +4,6 @@ const Service = db.service;
 const MessageBox = db.messageBox;
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
-const config = require("../config/auth.config");
 
 exports.allAccess = (req, res) => {
   res.status(200).send("Public Content.");

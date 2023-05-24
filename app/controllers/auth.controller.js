@@ -1,7 +1,5 @@
-const config = require("../config/auth.config");
 const db = require("../models");
 const User = db.user;
-const Role = db.role;
 
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
@@ -18,26 +16,14 @@ exports.signup = (req, res) => {
       res.status(500).send({ message: err });
       return;
     }
-
-    if (req.body.role) {
-      user.role = req.body.role;
-      user.save(err => {
-        if (err) {
-          res.status(500).send({ message: err });
-          return;
-        }
-        res.send({ message: "User was registered successfully!" });
-      });
-    } else {
-      user.role = "USER";
-      user.save(err => {
-        if (err) {
-          res.status(500).send({ message: err });
-          return;
-        }
-        res.send({ message: "User was registered successfully!" });
-      });
-    }
+    user.role = "USER";
+    user.save(err => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }
+      res.send({ message: "User was registered successfully!" });
+    });
   });
 };
 
@@ -67,7 +53,7 @@ exports.signin = (req, res) => {
         });
       }
 
-      var token = jwt.sign({ id: user.id }, config.secret, {
+      var token = jwt.sign({ id: user.id }, process.env.SECRET, {
         expiresIn: 86400 // 24 hours
       });
 

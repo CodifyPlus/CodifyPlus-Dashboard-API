@@ -6,7 +6,6 @@ const db = {};
 db.mongoose = mongoose;
 
 db.user = require("./user.model");
-//db.role = require("./role.model");
 db.service = require("./service.model");
 db.messageBox = require("./messageBox.model");
 

@@ -4,7 +4,7 @@
   "description": "CodifyPlus CRM Server",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "serve": "node server.js"
   },
   "keywords": [
     "node.js",

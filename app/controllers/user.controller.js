@@ -42,7 +42,6 @@ exports.getServiceInfo = (req, res) => {
       return;
     }
     else {
-      console.log(service, db.mongoose.Types.ObjectId(req.query.serviceId))
       res.status(200).send(service);
       return;
     }
@@ -146,7 +145,6 @@ exports.getAllUsernames = (req, res) => {
           label: user.username
         }
       });
-      //console.log(usernames)
       res.status(200).send(usernames);
       return;
     }
@@ -166,7 +164,6 @@ exports.getAllModerators = (req, res) => {
           label: user.username
         }
       });
-      //console.log(usernames)
       res.status(200).send(usernames);
       return;
     }
@@ -175,12 +172,9 @@ exports.getAllModerators = (req, res) => {
 
 exports.addNewService = async (req, res) => {
   const { name, cost, duration, assignedTo, assignedFor } = req.body;
-  console.log(assignedFor, assignedTo)
   const assignedForDoc = await User.findOne({ username: assignedFor });
 
   const assignedToDoc = await User.findOne({ username: assignedTo });
-
-  //console.log(assignedForDoc, assignedToDoc)
 
   const service = new Service({
     name: req.body.name,
@@ -188,11 +182,9 @@ exports.addNewService = async (req, res) => {
     status: "Pending",
     pathway: [
       {
-        notification: true,
         description: "Service has been initiated!",
         title: "Service initiated!",
         status: true,
-        index: 0,
       }
     ],
     duration: req.body.duration,
@@ -209,14 +201,105 @@ exports.addNewService = async (req, res) => {
     notes: [],
   });
 
-  service.save((err, service) => {
+  service.save(async (err, service) => {
     if (err) {
       res.status(500).send({ message: err });
       return;
     }
-    //console.log(service);
+
+    const user = await User.findOne({ username: assignedFor });
+    user.processServices.push({
+      serviceId: service._id,
+      name: service.name,
+    });
+    user.save(err => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }
+    });;
+
     res.status(200).send(service._id);
-
   });
+};
 
+exports.addNote = (req, res) => {
+  Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
+    if (err) {
+      res.status(500).send({ message: err });
+      return;
+    }
+    else {
+      const newNote = {
+        information: req.body.information,
+        private: req.body.private,
+        createdAt: new Date()
+      };
+
+      service.notes.push(newNote);
+
+      service.save((err, updatedService) => {
+        if (err) {
+          res.status(500).send({ message: err });
+          return;
+        } else {
+          res.status(200).send(updatedService);
+          return;
+        }
+      });
+    }
+  });
+};
+
+exports.addTrack = (req, res) => {
+  Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
+    if (err) {
+      res.status(500).send({ message: err });
+      return;
+    }
+    else {
+      const newTrackPoint = {
+        description: req.body.description,
+        title: req.body.title,
+        startedAt: req.body.startedAt,
+        status: req.body.status,
+      };
+
+      service.pathway.push(newTrackPoint);
+
+      service.save((err, updatedService) => {
+        if (err) {
+          res.status(500).send({ message: err });
+          return;
+        } else {
+          res.status(200).send(updatedService);
+          return;
+        }
+      });
+    }
+  });
+};
+
+exports.editTrackStatus = (req, res) => {
+  Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
+    if (err) {
+      res.status(500).send({ message: err });
+      return;
+    }
+    else {
+      const pathwayId = req.body.pathwayId;
+      const pathway = service.pathway.find((p) => p._id.toString() === pathwayId);
+      pathway.status = true;
+
+      service.save((err, updatedService) => {
+        if (err) {
+          res.status(500).send({ message: err });
+          return;
+        } else {
+          res.status(200).send(updatedService);
+          return;
+        }
+      });
+    }
+  });
 };

@@ -48,8 +48,24 @@ module.exports = function (app) {
   app.get("/api/getAllModerators", [authJwt.verifyToken, authJwt.isAdmin],
     controller.getAllModerators);
 
-    app.post("/api/addNewService", [authJwt.verifyToken, authJwt.isAdmin],
+  app.post("/api/addNewService", [authJwt.verifyToken, authJwt.isAdmin],
     controller.addNewService);
+
+  app.post("/api/addNote", [authJwt.verifyToken, authJwt.isAdmin],
+    controller.addNote);
+
+  app.post("/api/addTrack", [authJwt.verifyToken, authJwt.isAdmin],
+    controller.addTrack);
+
+  //TBD
+  app.post("/api/editNote", [authJwt.verifyToken, authJwt.isAdmin],
+    controller.addNewService);
+  //TBD
+  app.post("/api/editTrack", [authJwt.verifyToken, authJwt.isAdmin],
+    controller.addNewService);
+
+  app.post("/api/editTrackStatus", [authJwt.verifyToken, authJwt.isAdmin],
+    controller.editTrackStatus);
 
 };
 

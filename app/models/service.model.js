@@ -16,11 +16,9 @@ const Service = mongoose.model(
         type: Date,
         default: Date.now
       },
-      notification: Boolean,
       description: String,
       title: String,
       status: Boolean,
-      index: Number,
     }],
     duration: String,
     assignedFor:
@@ -30,7 +28,12 @@ const Service = mongoose.model(
       email: String,
     },
     notes: [{
-      information: String
+      information: String,
+      private: Boolean,
+      createdAt: {
+        type: Date,
+        default: Date.now
+      },
     }]
   })
 );

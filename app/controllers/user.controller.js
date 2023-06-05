@@ -402,3 +402,55 @@ exports.editTrackStatus = (req, res) => {
     }
   });
 };
+
+exports.markAsCompleted = (req, res) => {
+  Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
+    if (err) {
+      res.status(500).send({ message: err });
+      return;
+    }
+    else {
+      service.status = "Completed";
+      service.save(async (err, updatedService) => {
+        if (err) {
+          res.status(500).send({ message: err });
+          return;
+        } else {
+          const user = await User.findOne({ username: updatedService.assignedFor.username });
+          const containsRequiredServiceId = user.completedServices.some(obj => obj.serviceId.toString() === updatedService._id.toString());
+          if (!containsRequiredServiceId) {
+            user.completedServices.push({
+              serviceId: updatedService._id,
+              name: updatedService.name,
+            });
+          }
+          if (!containsRequiredServiceId) {
+            const filteredArray = user.processServices.filter(obj => obj.serviceId.toString() !== updatedService._id.toString());
+            user.processServices = filteredArray;
+          }
+          user.save(err => {
+            if (err) {
+              res.status(500).send({ message: err });
+              return;
+            }
+            else {
+              res.status(200).send(updatedService);
+              return;
+            }
+          });
+
+        }
+      });
+    }
+  });
+};
+
+exports.deleteService = async (req, res) => {
+  await Service.findByIdAndDelete(req.body.serviceId);
+  res.status(200).send({ message: "Deleted!" });
+};
+
+exports.deleteUser = async (req, res) => {
+  await User.findByIdAndDelete(req.body.userId);
+  res.status(200).send({ message: "Deleted!" });
+};

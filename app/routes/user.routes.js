@@ -67,6 +67,15 @@ module.exports = function (app) {
   app.post("/api/editTrackStatus", [authJwt.verifyToken, authJwt.isAdmin],
     controller.editTrackStatus);
 
+  app.post("/api/markAsCompleted", [authJwt.verifyToken, authJwt.isAdmin],
+    controller.markAsCompleted);
+
+  app.post("/api/deleteService", [authJwt.verifyToken, authJwt.isAdmin],
+    controller.deleteService);
+
+  app.post("/api/deleteUser", [authJwt.verifyToken, authJwt.isAdmin],
+    controller.deleteUser);
+
 };
 
 

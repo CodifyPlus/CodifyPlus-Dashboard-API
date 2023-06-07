@@ -52,7 +52,7 @@ exports.addNewUser = (req, res) => {
         const notificationBox = new NotificationBox({
             belongsTo: user.username,
             notifications: [],
-          });
+        });
         user.role = "USER";
         await notificationBox.save();
         user.save(async (err) => {
@@ -418,48 +418,91 @@ exports.sendNotification = async (req, res) => {
 
     const targetUser = await User.findOne({ username: req.body.username });
 
-    NotificationBox.findOne({ belongsTo: req.body.username }).exec((err, notificationBox) => {
+    NotificationBox.findOne({ belongsTo: req.body.username }).exec(async (err, notificationBox) => {
         if (err) {
             res.status(500).send({ message: err });
             return;
         }
         else {
+            if (!notificationBox) {
+                const newNotificationBox = new NotificationBox({
+                    belongsTo: req.query.username,
+                    notifications: [],
+                });
+                await newNotificationBox.save();
+            }
             const newNotification = {
                 title: req.body.title,
                 content: req.body.content,
                 createdAt: new Date()
             };
 
-            notificationBox.notifications.push(newNotification);
+            if (notificationBox) {
 
-            notificationBox.save(async (err, updatedNotificationBox) => {
-                if (err) {
-                    res.status(500).send({ message: err });
-                    return;
-                } else {
+                notificationBox.notifications.push(newNotification);
 
-                    if (req.body.sendEmail) {
-                        const contentForEmail = `
-              You have received a new notification from Start-up Kro
-              <br>
-              <br>
-              Notification:
-              <br>
-              ${updatedNotificationBox.notifications[updatedNotificationBox.notifications.length - 1].content}
-              `;
+                notificationBox.save(async (err, updatedNotificationBox) => {
+                    if (err) {
+                        res.status(500).send({ message: err });
+                        return;
+                    } else {
 
-                        const emailC = emailTemplate(contentForEmail);
+                        if (req.body.sendEmail) {
+                            const contentForEmail = `
+                  You have received a new notification from Start-up Kro
+                  <br>
+                  <br>
+                  Notification:
+                  <br>
+                  ${updatedNotificationBox.notifications[updatedNotificationBox.notifications.length - 1].content}
+                  `;
 
-                        const emailSubject = `Start-Up Kro - New Notification!`
+                            const emailC = emailTemplate(contentForEmail);
 
-                        await sendEmail(targetUser.email, emailC, emailSubject);
+                            const emailSubject = `Start-Up Kro - New Notification!`
 
+                            await sendEmail(targetUser.email, emailC, emailSubject);
+
+                        }
+
+                        res.status(200).send(updatedNotificationBox);
+                        return;
                     }
+                });
+            }
+            else {
+                newNotificationBox.notifications.push(newNotification);
 
-                    res.status(200).send(updatedNotificationBox);
-                    return;
-                }
-            });
+                newNotificationBox.save(async (err, updatedNotificationBox) => {
+                    if (err) {
+                        res.status(500).send({ message: err });
+                        return;
+                    } else {
+
+                        if (req.body.sendEmail) {
+                            const contentForEmail = `
+                  You have received a new notification from Start-up Kro
+                  <br>
+                  <br>
+                  Notification:
+                  <br>
+                  ${updatedNotificationBox.notifications[updatedNotificationBox.notifications.length - 1].content}
+                  `;
+
+                            const emailC = emailTemplate(contentForEmail);
+
+                            const emailSubject = `Start-Up Kro - New Notification!`
+
+                            await sendEmail(targetUser.email, emailC, emailSubject);
+
+                        }
+
+                        res.status(200).send(updatedNotificationBox);
+                        return;
+                    }
+                });
+            }
+
         }
     });
 };

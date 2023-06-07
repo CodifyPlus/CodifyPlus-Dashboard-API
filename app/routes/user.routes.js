@@ -14,6 +14,8 @@ module.exports = function (app) {
 
   app.get("/api/getServiceInfo", [authJwt.verifyToken], controller.getServiceInfo);
 
+  app.get("/api/getAllNotifications", [authJwt.verifyToken], controller.getAllNotifications);
+
 };
 
 

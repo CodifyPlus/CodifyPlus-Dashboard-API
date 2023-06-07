@@ -9,57 +9,62 @@ const { emailTemplate } = require("../templates/emailTemplate");
 const { sendEmail } = require("../config/emailer");
 
 exports.getAllUsers = (req, res) => {
-  User.find({}).exec((err, users) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
-    else {
-      res.status(200).send(users);
-      return;
-    }
-  });
-};
-
-exports.changeUserRole = (req, res) => {
-  const { newRole, userId } = req.body;
-  User.findByIdAndUpdate(userId, { role: newRole },
-    function (err, docs) {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
-      else {
-        res.status(204);
-      }
+    User.find({}).exec((err, users) => {
+        if (err) {
+            res.status(500).send({ message: err });
+            return;
+        }
+        else {
+            res.status(200).send(users);
+            return;
+        }
     });
 };
 
+exports.changeUserRole = (req, res) => {
+    const { newRole, userId } = req.body;
+    User.findByIdAndUpdate(userId, { role: newRole },
+        function (err, docs) {
+            if (err) {
+                res.status(500).send({ message: err });
+                return;
+            }
+            else {
+                res.status(204);
+            }
+        });
+};
+
 exports.addNewUser = (req, res) => {
-  const { username, email, password } = req.body;
+    const { username, email, password } = req.body;
 
-  const user = new User({
-    username: req.body.username,
-    email: req.body.email,
-    password: bcrypt.hashSync(req.body.password, 8)
-  });
+    const user = new User({
+        username: req.body.username,
+        email: req.body.email,
+        password: bcrypt.hashSync(req.body.password, 8)
+    });
 
-  user.save((err, user) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
-    user.role = "USER";
-    user.save(async (err) => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
-      else {
-        //Send Email Logic
+    user.save(async (err, user) => {
+        if (err) {
+            res.status(500).send({ message: err });
+            return;
+        }
+        const notificationBox = new NotificationBox({
+            belongsTo: user.username,
+            notifications: [],
+          });
+        user.role = "USER";
+        await notificationBox.save();
+        user.save(async (err) => {
+            if (err) {
+                res.status(500).send({ message: err });
+                return;
+            }
+            else {
+                //Send Email Logic
 
-        if (req.body.sendEmail) {
-          const contentForEmail = `
+                if (req.body.sendEmail) {
+                    const contentForEmail = `
             Your account details for logging into the StartupKro Dashboard are:
             <br>
             <br>
@@ -73,122 +78,122 @@ exports.addNewUser = (req, res) => {
             <a href="m.codifyplus.com"> Login Now!</a>
             `;
 
-          const emailC = emailTemplate(contentForEmail);
+                    const emailC = emailTemplate(contentForEmail);
 
-          const emailSubject = `StartupKro - Account Created Successfully!`
+                    const emailSubject = `StartupKro - Account Created Successfully!`
 
-          await sendEmail(email, emailC, emailSubject);
+                    await sendEmail(email, emailC, emailSubject);
 
-        }
+                }
 
-        res.send({ message: "User was registered successfully!" });
-      }
+                res.send({ message: "User was registered successfully!" });
+            }
+        });
     });
-  });
 };
 
 exports.getAllServices = (req, res) => {
-  Service.find({}).exec((err, services) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
-    else {
-      res.status(200).send(services);
-      return;
-    }
-  });
+    Service.find({}).exec((err, services) => {
+        if (err) {
+            res.status(500).send({ message: err });
+            return;
+        }
+        else {
+            res.status(200).send(services);
+            return;
+        }
+    });
 };
 
 exports.getAllUsernames = (req, res) => {
-  User.find({}, "username").exec((err, users) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
-    else {
-      const usernames = users.map(user => {
-        return {
-          value: user.username,
-          label: user.username
+    User.find({}, "username").exec((err, users) => {
+        if (err) {
+            res.status(500).send({ message: err });
+            return;
         }
-      });
-      res.status(200).send(usernames);
-      return;
-    }
-  });
+        else {
+            const usernames = users.map(user => {
+                return {
+                    value: user.username,
+                    label: user.username
+                }
+            });
+            res.status(200).send(usernames);
+            return;
+        }
+    });
 };
 
 exports.getAllModerators = (req, res) => {
-  User.find({ role: { $in: ['MODERATOR', 'ADMIN'] } }, "username").exec((err, moderators) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
-    else {
-      const usernames = moderators.map(user => {
-        return {
-          value: user.username,
-          label: user.username
+    User.find({ role: { $in: ['MODERATOR', 'ADMIN'] } }, "username").exec((err, moderators) => {
+        if (err) {
+            res.status(500).send({ message: err });
+            return;
         }
-      });
-      res.status(200).send(usernames);
-      return;
-    }
-  });
+        else {
+            const usernames = moderators.map(user => {
+                return {
+                    value: user.username,
+                    label: user.username
+                }
+            });
+            res.status(200).send(usernames);
+            return;
+        }
+    });
 };
 
 exports.addNewService = async (req, res) => {
-  const { name, cost, duration, assignedTo, assignedFor } = req.body;
-  const assignedForDoc = await User.findOne({ username: assignedFor });
+    const { name, cost, duration, assignedTo, assignedFor } = req.body;
+    const assignedForDoc = await User.findOne({ username: assignedFor });
 
-  const assignedToDoc = await User.findOne({ username: assignedTo });
+    const assignedToDoc = await User.findOne({ username: assignedTo });
 
-  const service = new Service({
-    name: req.body.name,
-    cost: req.body.cost,
-    status: "Pending",
-    pathway: [
-      {
-        description: "Service has been initiated!",
-        title: "Service initiated!",
-        status: true,
-      }
-    ],
-    duration: req.body.duration,
-    assignedFor: {
-      username: assignedForDoc.username,
-      userId: assignedForDoc._id,
-      email: assignedForDoc.email,
-    },
-    assignedTo: {
-      username: assignedToDoc.username,
-      userId: assignedToDoc._id,
-      email: assignedToDoc.email,
-    },
-    notes: [],
-  });
-
-  service.save(async (err, service) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
-
-    const user = await User.findOne({ username: assignedFor });
-    user.processServices.push({
-      serviceId: service._id,
-      name: service.name,
-    });
-    user.save(err => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
+    const service = new Service({
+        name: req.body.name,
+        cost: req.body.cost,
+        status: "Pending",
+        pathway: [
+            {
+                description: "Service has been initiated!",
+                title: "Service initiated!",
+                status: true,
+            }
+        ],
+        duration: req.body.duration,
+        assignedFor: {
+            username: assignedForDoc.username,
+            userId: assignedForDoc._id,
+            email: assignedForDoc.email,
+        },
+        assignedTo: {
+            username: assignedToDoc.username,
+            userId: assignedToDoc._id,
+            email: assignedToDoc.email,
+        },
+        notes: [],
     });
 
-    if (req.body.sendEmailToUser) {
-      const contentForEmail = `
+    service.save(async (err, service) => {
+        if (err) {
+            res.status(500).send({ message: err });
+            return;
+        }
+
+        const user = await User.findOne({ username: assignedFor });
+        user.processServices.push({
+            serviceId: service._id,
+            name: service.name,
+        });
+        user.save(err => {
+            if (err) {
+                res.status(500).send({ message: err });
+                return;
+            }
+        });
+
+        if (req.body.sendEmailToUser) {
+            const contentForEmail = `
         Thanks for choosing <b>"${service.name}"</b> service
         <br>
         <br>
@@ -202,16 +207,16 @@ exports.addNewService = async (req, res) => {
         <a href="m.codifyplus.com"> Login Now!</a>
         `;
 
-      const emailC = emailTemplate(contentForEmail);
+            const emailC = emailTemplate(contentForEmail);
 
-      const emailSubject = `Start-Up Kro - Thanks for choosing Us!`
+            const emailSubject = `Start-Up Kro - Thanks for choosing Us!`
 
-      await sendEmail(service.assignedFor.email, emailC, emailSubject);
+            await sendEmail(service.assignedFor.email, emailC, emailSubject);
 
-    }
+        }
 
-    if (req.body.sendEmailToAssignee) {
-      const contentForEmail = `
+        if (req.body.sendEmailToAssignee) {
+            const contentForEmail = `
         You have been assigned a new service.
         <br>
         <br>
@@ -226,42 +231,41 @@ exports.addNewService = async (req, res) => {
         <a href="m.codifyplus.com"> Login Now!</a>
         `;
 
-      const emailC = emailTemplate(contentForEmail);
+            const emailC = emailTemplate(contentForEmail);
 
-      const emailSubject = `Start-Up Kro - New Service Assigned!`
+            const emailSubject = `Start-Up Kro - New Service Assigned!`
 
-      await sendEmail(service.assignedTo.email, emailC, emailSubject);
+            await sendEmail(service.assignedTo.email, emailC, emailSubject);
 
-    }
+        }
 
-    res.status(200).send(service._id);
-  });
+        res.status(200).send(service._id);
+    });
 };
 
 exports.addNote = (req, res) => {
-  console.log(req.body)
-  Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
-    else {
-      const newNote = {
-        information: req.body.information,
-        private: req.body.private,
-        createdAt: new Date()
-      };
-
-      service.notes.push(newNote);
-
-      service.save(async (err, updatedService) => {
+    Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
         if (err) {
-          res.status(500).send({ message: err });
-          return;
-        } else {
+            res.status(500).send({ message: err });
+            return;
+        }
+        else {
+            const newNote = {
+                information: req.body.information,
+                private: req.body.private,
+                createdAt: new Date()
+            };
 
-          if (req.body.sendEmail) {
-            const contentForEmail = `
+            service.notes.push(newNote);
+
+            service.save(async (err, updatedService) => {
+                if (err) {
+                    res.status(500).send({ message: err });
+                    return;
+                } else {
+
+                    if (req.body.sendEmail) {
+                        const contentForEmail = `
             A new notification has been added to your service "${updatedService.name}"
             <br>
             <br>
@@ -270,46 +274,46 @@ exports.addNote = (req, res) => {
             ${updatedService.notes[updatedService.notes.length - 1].information}
             `;
 
-            const emailC = emailTemplate(contentForEmail);
+                        const emailC = emailTemplate(contentForEmail);
 
-            const emailSubject = `Start-Up Kro - ${updatedService.name} - Notification!`
+                        const emailSubject = `Start-Up Kro - ${updatedService.name} - Notification!`
 
-            await sendEmail(updatedService.assignedFor.email, emailC, emailSubject);
+                        await sendEmail(updatedService.assignedFor.email, emailC, emailSubject);
 
-          }
+                    }
 
-          res.status(200).send(updatedService);
-          return;
+                    res.status(200).send(updatedService);
+                    return;
+                }
+            });
         }
-      });
-    }
-  });
+    });
 };
 
 exports.addTrack = (req, res) => {
-  Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
-    else {
-      const newTrackPoint = {
-        description: req.body.description,
-        title: req.body.title,
-        startedAt: req.body.startedAt,
-        status: req.body.status,
-      };
-
-      service.pathway.push(newTrackPoint);
-
-      service.save(async (err, updatedService) => {
+    Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
         if (err) {
-          res.status(500).send({ message: err });
-          return;
-        } else {
+            res.status(500).send({ message: err });
+            return;
+        }
+        else {
+            const newTrackPoint = {
+                description: req.body.description,
+                title: req.body.title,
+                startedAt: req.body.startedAt,
+                status: req.body.status,
+            };
 
-          if (req.body.sendEmail) {
-            const contentForEmail = `
+            service.pathway.push(newTrackPoint);
+
+            service.save(async (err, updatedService) => {
+                if (err) {
+                    res.status(500).send({ message: err });
+                    return;
+                } else {
+
+                    if (req.body.sendEmail) {
+                        const contentForEmail = `
             Check current status for your service <b>"${updatedService.name}"</b>
             <br>
             <br>
@@ -318,94 +322,144 @@ exports.addTrack = (req, res) => {
             Description: ${updatedService.pathway[updatedService.pathway.length - 1].description}
             `;
 
-            const emailC = emailTemplate(contentForEmail);
+                        const emailC = emailTemplate(contentForEmail);
 
-            const emailSubject = `Start-Up Kro - ${updatedService.name} - Status Update!`
+                        const emailSubject = `Start-Up Kro - ${updatedService.name} - Status Update!`
 
-            await sendEmail(updatedService.assignedFor.email, emailC, emailSubject);
+                        await sendEmail(updatedService.assignedFor.email, emailC, emailSubject);
 
-          }
+                    }
 
-          res.status(200).send(updatedService);
-          return;
+                    res.status(200).send(updatedService);
+                    return;
+                }
+            });
         }
-      });
-    }
-  });
+    });
 };
 
 exports.editTrackStatus = (req, res) => {
-  Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
-    else {
-      const pathwayId = req.body.pathwayId;
-      const pathway = service.pathway.find((p) => p._id.toString() === pathwayId);
-      pathway.status = true;
-
-      service.save((err, updatedService) => {
+    Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
         if (err) {
-          res.status(500).send({ message: err });
-          return;
-        } else {
-          res.status(200).send(updatedService);
-          return;
+            res.status(500).send({ message: err });
+            return;
         }
-      });
-    }
-  });
+        else {
+            const pathwayId = req.body.pathwayId;
+            const pathway = service.pathway.find((p) => p._id.toString() === pathwayId);
+            pathway.status = true;
+
+            service.save((err, updatedService) => {
+                if (err) {
+                    res.status(500).send({ message: err });
+                    return;
+                } else {
+                    res.status(200).send(updatedService);
+                    return;
+                }
+            });
+        }
+    });
 };
 
 exports.markAsCompleted = (req, res) => {
-  Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
-    else {
-      service.status = "Completed";
-      service.save(async (err, updatedService) => {
+    Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
         if (err) {
-          res.status(500).send({ message: err });
-          return;
-        } else {
-          const user = await User.findOne({ username: updatedService.assignedFor.username });
-          const containsRequiredServiceId = user.completedServices.some(obj => obj.serviceId.toString() === updatedService._id.toString());
-          if (!containsRequiredServiceId) {
-            user.completedServices.push({
-              serviceId: updatedService._id,
-              name: updatedService.name,
-            });
-          }
-          if (!containsRequiredServiceId) {
-            const filteredArray = user.processServices.filter(obj => obj.serviceId.toString() !== updatedService._id.toString());
-            user.processServices = filteredArray;
-          }
-          user.save(err => {
-            if (err) {
-              res.status(500).send({ message: err });
-              return;
-            }
-            else {
-              res.status(200).send(updatedService);
-              return;
-            }
-          });
-
+            res.status(500).send({ message: err });
+            return;
         }
-      });
-    }
-  });
+        else {
+            service.status = "Completed";
+            service.save(async (err, updatedService) => {
+                if (err) {
+                    res.status(500).send({ message: err });
+                    return;
+                } else {
+                    const user = await User.findOne({ username: updatedService.assignedFor.username });
+                    const containsRequiredServiceId = user.completedServices.some(obj => obj.serviceId.toString() === updatedService._id.toString());
+                    if (!containsRequiredServiceId) {
+                        user.completedServices.push({
+                            serviceId: updatedService._id,
+                            name: updatedService.name,
+                        });
+                    }
+                    if (!containsRequiredServiceId) {
+                        const filteredArray = user.processServices.filter(obj => obj.serviceId.toString() !== updatedService._id.toString());
+                        user.processServices = filteredArray;
+                    }
+                    user.save(err => {
+                        if (err) {
+                            res.status(500).send({ message: err });
+                            return;
+                        }
+                        else {
+                            res.status(200).send(updatedService);
+                            return;
+                        }
+                    });
+
+                }
+            });
+        }
+    });
 };
 
 exports.deleteService = async (req, res) => {
-  await Service.findByIdAndDelete(req.body.serviceId);
-  res.status(200).send({ message: "Deleted!" });
+    await Service.findByIdAndDelete(req.body.serviceId);
+    res.status(200).send({ message: "Deleted!" });
 };
 
 exports.deleteUser = async (req, res) => {
-  await User.findByIdAndDelete(req.body.userId);
-  res.status(200).send({ message: "Deleted!" });
+    await User.findByIdAndDelete(req.body.userId);
+    res.status(200).send({ message: "Deleted!" });
+};
+
+exports.sendNotification = async (req, res) => {
+
+    const targetUser = await User.findOne({ username: req.body.username });
+
+    NotificationBox.findOne({ belongsTo: req.body.username }).exec((err, notificationBox) => {
+        if (err) {
+            res.status(500).send({ message: err });
+            return;
+        }
+        else {
+            const newNotification = {
+                title: req.body.title,
+                content: req.body.content,
+                createdAt: new Date()
+            };
+
+            notificationBox.notifications.push(newNotification);
+
+            notificationBox.save(async (err, updatedNotificationBox) => {
+                if (err) {
+                    res.status(500).send({ message: err });
+                    return;
+                } else {
+
+                    if (req.body.sendEmail) {
+                        const contentForEmail = `
+              You have received a new notification from Start-up Kro
+              <br>
+              <br>
+              Notification:
+              <br>
+              ${updatedNotificationBox.notifications[updatedNotificationBox.notifications.length - 1].content}
+              `;
+
+                        const emailC = emailTemplate(contentForEmail);
+
+                        const emailSubject = `Start-Up Kro - New Notification!`
+
+                        await sendEmail(targetUser.email, emailC, emailSubject);
+
+                    }
+
+                    res.status(200).send(updatedNotificationBox);
+                    return;
+                }
+            });
+        }
+    });
 };

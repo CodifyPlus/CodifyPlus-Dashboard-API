@@ -34,3 +34,16 @@ exports.getServiceInfo = (req, res) => {
   });
 };
 
+exports.getAllNotifications = (req, res) => {
+  NotificationBox.findOne({ belongsTo: req.query.username }).exec((err, notificationBox) => {
+    if (err) {
+      res.status(500).send({ message: err });
+      return;
+    }
+    else {
+      res.status(200).send(notificationBox ? notificationBox.notifications : []);
+      return;
+    }
+  });
+};
+

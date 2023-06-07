@@ -1,13 +1,13 @@
 const mongoose = require("mongoose");
 
 const NotificationBoxSchema = new mongoose.Schema({
-    belongsTo: mongoose.Schema.Types.ObjectId,
+    belongsTo: String,
     notifications: [{
-        sentAt: {
+        createdAt: {
             type: Date,
             default: Date.now
         },
-        message: String,
+        content: String,
         title: String,
     }],
 });

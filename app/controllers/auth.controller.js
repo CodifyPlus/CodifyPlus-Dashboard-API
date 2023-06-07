@@ -3,6 +3,7 @@ const User = db.user;
 require("dotenv").config();
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
+const NotificationBox = db.notificationBox;
 
 exports.signup = (req, res) => {
   const user = new User({
@@ -11,12 +12,17 @@ exports.signup = (req, res) => {
     password: bcrypt.hashSync(req.body.password, 8)
   });
 
-  user.save((err, user) => {
+  user.save(async (err, user) => {
     if (err) {
       res.status(500).send({ message: err });
       return;
     }
+    const notificationBox = new NotificationBox({
+      belongsTo: user.username,
+      notifications: [],
+    });
     user.role = "USER";
+    await notificationBox.save();
     user.save(err => {
       if (err) {
         res.status(500).send({ message: err });

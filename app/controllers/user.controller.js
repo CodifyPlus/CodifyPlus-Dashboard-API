@@ -41,7 +41,7 @@ exports.getAllNotifications = (req, res) => {
       return;
     }
     else {
-      if(!notificationBox){
+      if (!notificationBox) {
         const newNotificationBox = new NotificationBox({
           belongsTo: req.query.username,
           notifications: [],
@@ -54,3 +54,29 @@ exports.getAllNotifications = (req, res) => {
   });
 };
 
+exports.deleteNotification = async (req, res) => {
+
+  NotificationBox.findOne({ belongsTo: req.body.username }).exec(async (err, notificationBox) => {
+    if (err) {
+      res.status(500).send({ message: err });
+      return;
+    }
+    else {
+      const notificationIndex = notificationBox.notifications.findIndex(notification => notification._id.toString() === req.body.notificationId);
+
+      notificationBox.notifications.splice(notificationIndex, 1);
+
+      notificationBox.save((saveErr) => {
+        if (saveErr) {
+          res.status(500).send({ message: saveErr });
+          return;
+        }
+        else {
+          res.status(200).send(notificationBox ? notificationBox.notifications : []);
+          return;
+        }
+
+      });
+    }
+  });
+};

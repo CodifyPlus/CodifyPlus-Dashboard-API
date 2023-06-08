@@ -7,8 +7,8 @@ const NotificationBox = db.notificationBox;
 
 exports.signup = (req, res) => {
   const user = new User({
-    username: req.body.username,
-    email: req.body.email,
+    username: req.body.username.toLowerCase(),
+    email: req.body.email.toLowerCase(),
     password: bcrypt.hashSync(req.body.password, 8)
   });
 
@@ -35,7 +35,7 @@ exports.signup = (req, res) => {
 
 exports.signin = (req, res) => {
   User.findOne({
-    username: req.body.username
+    username: req.body.username.toLowerCase()
   })
     .exec((err, user) => {
       if (err) {

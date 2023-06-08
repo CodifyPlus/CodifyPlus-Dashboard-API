@@ -20,6 +20,8 @@ module.exports = function (app) {
 
   app.post("/api/updateProfile", [authJwt.verifyToken], controller.updateProfile);
 
+  app.post("/api/changePassword", [authJwt.verifyToken], controller.changePassword);
+
 };
 
 

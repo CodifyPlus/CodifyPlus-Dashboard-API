@@ -106,3 +106,35 @@ exports.updateProfile = async (req, res) => {
     }
   });
 };
+
+exports.changePassword = async (req, res) => {
+  User.findById(req.userId).exec(async (err, user) => {
+    if (err) {
+      res.status(500).send({ message: err });
+      return;
+    }
+    else {
+      var passwordIsValid = bcrypt.compareSync(
+        req.body.oldPassword,
+        user.password
+      );
+      if (passwordIsValid && (req.body.newPassword === req.body.confirmNewPassword)) {
+        user.password = bcrypt.hashSync(req.body.newPassword, 8);
+        user.save((saveErr) => {
+          if (saveErr) {
+            res.status(500).send({ message: saveErr });
+            return;
+          }
+          else {
+            res.status(200).send(user);
+            return;
+          }
+        });
+      }
+      else {
+        res.status(500).send({ error: "Old password is incorrect!" });
+        return;
+      }
+    }
+  });
+};

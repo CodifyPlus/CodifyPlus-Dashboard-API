@@ -25,8 +25,7 @@ const UserSchema = new mongoose.Schema({
       name: String
     }
   ],
-  firstName: String,
-  lastName: String,
+  fullname: String,
   createdAt: {
     type: Date,
     default: Date.now

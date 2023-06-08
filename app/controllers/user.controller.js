@@ -80,3 +80,29 @@ exports.deleteNotification = async (req, res) => {
     }
   });
 };
+
+exports.updateProfile = async (req, res) => {
+  User.findById(req.userId).exec(async (err, user) => {
+    if (err) {
+      res.status(500).send({ message: err });
+      return;
+    }
+    else {
+      if (req.body.fullname && req.body.email && req.body.phone) {
+        user.fullname = req.body.fullname;
+        user.email = req.body.email;
+        user.phone = req.body.phone;
+        user.save((saveErr) => {
+          if (saveErr) {
+            res.status(500).send({ message: saveErr });
+            return;
+          }
+          else {
+            res.status(200).send(user);
+            return;
+          }
+        });
+      }
+    }
+  });
+};

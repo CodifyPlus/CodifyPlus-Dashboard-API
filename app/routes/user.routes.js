@@ -18,6 +18,8 @@ module.exports = function (app) {
 
   app.post("/api/deleteNotification", [authJwt.verifyToken], controller.deleteNotification);
 
+  app.post("/api/updateProfile", [authJwt.verifyToken], controller.updateProfile);
+
 };
 
 

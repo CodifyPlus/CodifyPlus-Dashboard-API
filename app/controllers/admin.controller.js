@@ -347,7 +347,7 @@ exports.editTrackStatus = (req, res) => {
         else {
             const pathwayId = req.body.pathwayId;
             const pathway = service.pathway.find((p) => p._id.toString() === pathwayId);
-            pathway.status = true;
+            pathway.status = !pathway.status;
 
             service.save((err, updatedService) => {
                 if (err) {
@@ -369,7 +369,7 @@ exports.markAsCompleted = (req, res) => {
             return;
         }
         else {
-            service.status = "Completed";
+            service.status = service.status === "Pending" ? "Completed" : "Pending";
             service.save(async (err, updatedService) => {
                 if (err) {
                     res.status(500).send({ message: err });

@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const db = require("../models");
+const Service = db.service;
 const User = db.user;
 require("dotenv").config();
 
@@ -49,9 +50,25 @@ isModerator = (req, res, next) => {
   });
 };
 
+isAssignedToUpstreamService = (req, res, next) => {
+  Service.findById(req.body.serviceId).exec((err, service) => {
+    if (err) {
+      res.status(500).send({ message: err });
+      return;
+    }
+    if (db.mongoose.Types.ObjectId(req.userId).toString() === db.mongoose.Types.ObjectId(service.assignedTo.userId).toString()) {
+      next();
+      return;
+    }
+    res.status(403).send({ message: "This Moderator is not assigned to upstream service!" });
+    return;
+  });
+}
+
 const authJwt = {
   verifyToken,
   isAdmin,
-  isModerator
+  isModerator,
+  isAssignedToUpstreamService
 };
 module.exports = authJwt;

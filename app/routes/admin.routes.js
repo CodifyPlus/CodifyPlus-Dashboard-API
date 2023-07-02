@@ -62,4 +62,7 @@ module.exports = function (app) {
     app.post("/api/approveTrack", [authJwt.verifyToken, authJwt.isAdmin],
         controller.approveTrack);
 
+    app.post("/api/approveNote", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.approveNote);
+
 };

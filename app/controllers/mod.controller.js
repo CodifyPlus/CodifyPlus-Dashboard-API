@@ -91,12 +91,57 @@ exports.addTrackMod = (req, res) => {
             Description: ${updatedService.pathway[updatedService.pathway.length - 1].description}
             `;
 
-                        const emailC = emailTemplate(contentForEmail);
+                    const emailC = emailTemplate(contentForEmail);
 
-                        const emailSubject = `Start-Up Kro - ${updatedService.name} - Status Update by Moderator!`
+                    const emailSubject = `Start-Up Kro - ${updatedService.name} - Status Update by Moderator!`
 
-                        sendEmail('operation.startupkro@gmail.com', emailC, emailSubject);
+                    sendEmail('operation.startupkro@gmail.com', emailC, emailSubject);
 
+                    res.status(200).send(updatedService);
+                    return;
+                }
+            });
+        }
+    });
+};
+
+exports.addNoteMod = (req, res) => {
+    Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
+        if (err) {
+            res.status(500).send({ message: err });
+            return;
+        }
+        else {
+            const newNote = {
+                information: req.body.information,
+                private: false,
+                approved: false,
+                createdAt: new Date(),
+                sendEmail: req.body.sendEmail
+            };
+
+            service.notes.push(newNote);
+
+            service.save(async (err, updatedService) => {
+                if (err) {
+                    res.status(500).send({ message: err });
+                    return;
+                } else {
+
+                    const contentForEmail = `
+            A new notification has been added to the service "${updatedService.name}" by Moderator
+            <br>
+            <br>
+            Notification:
+            <br>
+            ${updatedService.notes[updatedService.notes.length - 1].information}
+            `;
+
+                    const emailC = emailTemplate(contentForEmail);
+
+                    const emailSubject = `Start-Up Kro - ${updatedService.name} - Notification added by Moderator!`
+
+                    sendEmail('operation.startupkro@gmail.com', emailC, emailSubject);
                     res.status(200).send(updatedService);
                     return;
                 }

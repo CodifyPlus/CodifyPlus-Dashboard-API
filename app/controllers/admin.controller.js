@@ -533,6 +533,7 @@ exports.approveTrack = (req, res) => {
             const toSendEmail = pathway.sendEmail;
             pathway.sendEmail = false;
             pathway.approved = !pathway.approved;
+            const indexOfPoint = service.pathway.findIndex((p) => p._id.toString() === pathwayId);
 
             service.save(async (err, updatedService) => {
                 if (err) {
@@ -544,14 +545,57 @@ exports.approveTrack = (req, res) => {
             Check current status for your service <b>"${updatedService.name}"</b>
             <br>
             <br>
-            Status: <b>${updatedService.pathway[updatedService.pathway.length - 1].title}</b>
+            Status: <b>${updatedService.pathway[indexOfPoint].title}</b>
             <br>
-            Description: ${updatedService.pathway[updatedService.pathway.length - 1].description}
+            Description: ${updatedService.pathway[indexOfPoint].description}
             `;
 
                         const emailC = emailTemplate(contentForEmail);
 
                         const emailSubject = `Start-Up Kro - ${updatedService.name} - Status Update!`
+
+                        sendEmail(updatedService.assignedFor.email, emailC, emailSubject);
+
+                    }
+                    res.status(200).send(updatedService);
+                    return;
+                }
+            });
+        }
+    });
+};
+
+exports.approveNote = (req, res) => {
+    Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
+        if (err) {
+            res.status(500).send({ message: err });
+            return;
+        }
+        else {
+            const noteId = req.body.noteId;
+            const note = service.notes.find((n) => n._id.toString() === noteId);
+            const toSendEmail = note.sendEmail;
+            note.sendEmail = false;
+            note.approved = !note.approved;
+            const indexOfNote = service.notes.findIndex((n) => n._id.toString() === noteId);
+            service.save(async (err, updatedService) => {
+                if (err) {
+                    res.status(500).send({ message: err });
+                    return;
+                } else {
+                    if (toSendEmail) {
+                        const contentForEmail = `
+                        A new notification has been added to your service "${updatedService.name}"
+                        <br>
+                        <br>
+                        Notification:
+                        <br>
+                        ${updatedService.notes[indexOfNote].information}
+            `;
+
+                        const emailC = emailTemplate(contentForEmail);
+
+                        const emailSubject = `Start-Up Kro - ${updatedService.name} - Notification!`
 
                         sendEmail(updatedService.assignedFor.email, emailC, emailSubject);
 

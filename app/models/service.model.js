@@ -19,6 +19,8 @@ const Service = mongoose.model(
       description: String,
       title: String,
       status: Boolean,
+      approved: Boolean,
+      sendEmail: Boolean,
     }],
     duration: String,
     assignedFor:
@@ -30,6 +32,8 @@ const Service = mongoose.model(
     notes: [{
       information: String,
       private: Boolean,
+      approved: Boolean,
+      sendEmail: Boolean,
       createdAt: {
         type: Date,
         default: Date.now

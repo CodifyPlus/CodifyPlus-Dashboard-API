@@ -16,4 +16,7 @@ module.exports = function (app) {
     app.post("/api/editTrackStatusMod", [authJwt.verifyToken, authJwt.isModerator, authJwt.isAssignedToUpstreamService],
         controller.editTrackStatusMod);
 
+    app.post("/api/addTrackMod", [authJwt.verifyToken, authJwt.isModerator, authJwt.isAssignedToUpstreamService],
+        controller.addTrackMod);
+
 };

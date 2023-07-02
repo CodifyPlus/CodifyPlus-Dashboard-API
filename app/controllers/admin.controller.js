@@ -82,7 +82,7 @@ exports.addNewUser = (req, res) => {
 
                     const emailSubject = `StartupKro - Account Created Successfully!`
 
-                    await sendEmail(email, emailC, emailSubject);
+                    sendEmail(email, emailC, emailSubject);
 
                 }
 
@@ -211,7 +211,7 @@ exports.addNewService = async (req, res) => {
 
             const emailSubject = `Start-Up Kro - Thanks for choosing Us!`
 
-            await sendEmail(service.assignedFor.email, emailC, emailSubject);
+            sendEmail(service.assignedFor.email, emailC, emailSubject);
 
         }
 
@@ -253,6 +253,7 @@ exports.addNote = (req, res) => {
             const newNote = {
                 information: req.body.information,
                 private: req.body.private,
+                approved: true,
                 createdAt: new Date()
             };
 
@@ -278,7 +279,7 @@ exports.addNote = (req, res) => {
 
                         const emailSubject = `Start-Up Kro - ${updatedService.name} - Notification!`
 
-                        await sendEmail(updatedService.assignedFor.email, emailC, emailSubject);
+                        sendEmail(updatedService.assignedFor.email, emailC, emailSubject);
 
                     }
 
@@ -301,6 +302,7 @@ exports.addTrack = (req, res) => {
                 description: req.body.description,
                 title: req.body.title,
                 startedAt: req.body.startedAt,
+                approved: true,
                 status: req.body.status,
             };
 
@@ -326,7 +328,7 @@ exports.addTrack = (req, res) => {
 
                         const emailSubject = `Start-Up Kro - ${updatedService.name} - Status Update!`
 
-                        await sendEmail(updatedService.assignedFor.email, emailC, emailSubject);
+                        sendEmail(updatedService.assignedFor.email, emailC, emailSubject);
 
                     }
 
@@ -505,7 +507,7 @@ exports.sendNotification = async (req, res) => {
 
                             const emailSubject = `Start-Up Kro - New Notification!`
 
-                            await sendEmail(targetUser.email, emailC, emailSubject);
+                            sendEmail(targetUser.email, emailC, emailSubject);
 
                         }
 
@@ -515,6 +517,49 @@ exports.sendNotification = async (req, res) => {
                 });
             }
 
+        }
+    });
+};
+
+exports.approveTrack = (req, res) => {
+    Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
+        if (err) {
+            res.status(500).send({ message: err });
+            return;
+        }
+        else {
+            const pathwayId = req.body.pathwayId;
+            const pathway = service.pathway.find((p) => p._id.toString() === pathwayId);
+            const toSendEmail = pathway.sendEmail;
+            pathway.sendEmail = false;
+            pathway.approved = !pathway.approved;
+
+            service.save(async (err, updatedService) => {
+                if (err) {
+                    res.status(500).send({ message: err });
+                    return;
+                } else {
+                    if (toSendEmail) {
+                        const contentForEmail = `
+            Check current status for your service <b>"${updatedService.name}"</b>
+            <br>
+            <br>
+            Status: <b>${updatedService.pathway[updatedService.pathway.length - 1].title}</b>
+            <br>
+            Description: ${updatedService.pathway[updatedService.pathway.length - 1].description}
+            `;
+
+                        const emailC = emailTemplate(contentForEmail);
+
+                        const emailSubject = `Start-Up Kro - ${updatedService.name} - Status Update!`
+
+                        sendEmail(updatedService.assignedFor.email, emailC, emailSubject);
+
+                    }
+                    res.status(200).send(updatedService);
+                    return;
+                }
+            });
         }
     });
 };

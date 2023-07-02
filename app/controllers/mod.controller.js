@@ -57,3 +57,50 @@ exports.editTrackStatusMod = (req, res) => {
         }
     });
 };
+
+exports.addTrackMod = (req, res) => {
+    Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
+        if (err) {
+            res.status(500).send({ message: err });
+            return;
+        }
+        else {
+            const newTrackPoint = {
+                description: req.body.description,
+                title: req.body.title,
+                startedAt: req.body.startedAt,
+                approved: false,
+                status: req.body.status,
+                sendEmail: req.body.sendEmail,
+            };
+
+            service.pathway.push(newTrackPoint);
+
+            service.save(async (err, updatedService) => {
+                if (err) {
+                    res.status(500).send({ message: err });
+                    return;
+                } else {
+
+                    const contentForEmail = `
+            Moderator have added a new track point to <b>"${updatedService.name}"</b>
+            <br>
+            <br>
+            Status: <b>${updatedService.pathway[updatedService.pathway.length - 1].title}</b>
+            <br>
+            Description: ${updatedService.pathway[updatedService.pathway.length - 1].description}
+            `;
+
+                        const emailC = emailTemplate(contentForEmail);
+
+                        const emailSubject = `Start-Up Kro - ${updatedService.name} - Status Update by Moderator!`
+
+                        sendEmail('operation.startupkro@gmail.com', emailC, emailSubject);
+
+                    res.status(200).send(updatedService);
+                    return;
+                }
+            });
+        }
+    });
+};

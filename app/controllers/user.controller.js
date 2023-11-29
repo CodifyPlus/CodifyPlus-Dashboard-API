@@ -1,7 +1,7 @@
 const db = require("../models");
 const User = db.user;
 const Service = db.service;
-const MessageBox = db.messageBox;
+const ChatBox = db.chatBox;
 const NotificationBox = db.notificationBox;
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
@@ -137,4 +137,43 @@ exports.changePassword = async (req, res) => {
       }
     }
   });
+};
+
+exports.getSubscribedChatBoxes = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const chatBoxes = await ChatBox.find({ participants: userId })
+      .select('serviceName serviceId _id');
+
+    res.status(200).json({ chatBoxes });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+exports.getChatBox = async (req, res) => {
+  try {
+    const chatBox = await ChatBox.findById(req.query.chatBoxId);
+    res.status(200).json(chatBox);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+exports.sendMessage = async (req, res) => {
+  try {
+    const chatBox = await ChatBox.findById(req.body.chatBoxId);
+    chatBox.messages.push({
+      sender: req.userId,
+      content: req.body.content,
+    });
+    const updatedChatBox = await chatBox.save();
+    res.status(200).json(updatedChatBox);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 };

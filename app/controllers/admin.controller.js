@@ -1,7 +1,7 @@
 const db = require("../models");
 const User = db.user;
 const Service = db.service;
-const MessageBox = db.messageBox;
+const ChatBox = db.chatBox;
 const NotificationBox = db.notificationBox;
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
@@ -174,16 +174,31 @@ exports.addNewService = async (req, res) => {
         notes: [],
     });
 
+    const chatBox = new ChatBox({
+        serviceName: name,
+        participants: [assignedForDoc._id, assignedToDoc._id],
+        messages: [],
+    });
+
     service.save(async (err, service) => {
         if (err) {
             res.status(500).send({ message: err });
             return;
         }
-
+        const chatBoxSaved = await chatBox.save();
         const user = await User.findOne({ username: assignedFor });
+        const moderator = await User.findOne({ username: assignedTo });
         user.processServices.push({
             serviceId: service._id,
             name: service.name,
+        });
+        user.participatingChatBoxIds.push(chatBoxSaved._id);
+        moderator.participatingChatBoxIds.push(chatBoxSaved._id);
+        moderator.save(err => {
+            if (err) {
+                res.status(500).send({ message: err });
+                return;
+            }
         });
         user.save(err => {
             if (err) {

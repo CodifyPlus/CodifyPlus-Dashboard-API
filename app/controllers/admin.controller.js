@@ -176,6 +176,7 @@ exports.addNewService = async (req, res) => {
 
     const chatBox = new ChatBox({
         serviceName: name,
+        assignedFor: assignedForDoc.username,
         participants: [assignedForDoc._id, assignedToDoc._id],
         messages: [],
     });

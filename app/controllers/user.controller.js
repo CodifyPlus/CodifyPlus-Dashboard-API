@@ -144,7 +144,7 @@ exports.getSubscribedChatBoxes = async (req, res) => {
     const userId = req.userId;
 
     const chatBoxes = await ChatBox.find({ participants: userId })
-      .select('serviceName serviceId _id');
+      .select('serviceName assignedFor serviceId _id');
 
     res.status(200).json({ chatBoxes });
   } catch (error) {

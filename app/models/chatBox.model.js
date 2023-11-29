@@ -6,6 +6,10 @@ const ChatBoxSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    assignedFor: {
+        type: String,
+        required: true,
+    },
     participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     messages: [
         {

@@ -65,4 +65,7 @@ module.exports = function (app) {
     app.post("/api/approveNote", [authJwt.verifyToken, authJwt.isAdmin],
         controller.approveNote);
 
+    app.get("/api/admin/getSubscribedChatBoxes", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.getSubscribedChatBoxes);
+
 };

@@ -623,3 +623,17 @@ exports.approveNote = (req, res) => {
         }
     });
 };
+
+exports.getSubscribedChatBoxes = async (req, res) => {
+    try {
+        const userId = req.userId;
+
+        const chatBoxes = await ChatBox.find({})
+            .select('serviceName assignedFor serviceId _id');
+
+        res.status(200).json({ chatBoxes });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};

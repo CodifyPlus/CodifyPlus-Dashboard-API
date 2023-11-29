@@ -167,7 +167,7 @@ exports.sendMessage = async (req, res) => {
   try {
     const chatBox = await ChatBox.findById(req.body.chatBoxId);
     chatBox.messages.push({
-      sender: req.userId,
+      senderName: req.body.senderName,
       content: req.body.content,
     });
     const updatedChatBox = await chatBox.save();

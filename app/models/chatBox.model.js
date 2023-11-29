@@ -13,7 +13,7 @@ const ChatBoxSchema = new mongoose.Schema({
     participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     messages: [
         {
-            sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            senderName: { type: String },
             content: { type: String, required: true },
             timestamp: { type: Date, default: Date.now },
         },

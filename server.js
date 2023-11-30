@@ -1,6 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const { Novu } = require('@novu/node');
+const novu = new Novu(process.env.NOVU_API_KEY);
+exports.novu = novu;
 
 const app = express();
 

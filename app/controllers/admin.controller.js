@@ -7,6 +7,7 @@ var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 const { emailTemplate } = require("../templates/emailTemplate");
 const { sendEmail } = require("../config/emailer");
+const { novu } = require("../../server");
 
 exports.getAllUsers = (req, res) => {
     User.find({}).exec((err, users) => {
@@ -446,8 +447,16 @@ exports.deleteUser = async (req, res) => {
 
 exports.sendNotification = async (req, res) => {
 
-    const targetUser = await User.findOne({ username: req.body.username });
+    novu.trigger('codifyplus', {
+        to: {
+            subscriberId: req.body.username,
+        },
+        payload: {
+            description: req.body.content,
+        }
+    });
 
+    /*
     NotificationBox.findOne({ belongsTo: req.body.username }).exec(async (err, notificationBox) => {
         if (err) {
             res.status(500).send({ message: err });
@@ -535,6 +544,7 @@ exports.sendNotification = async (req, res) => {
 
         }
     });
+    */
 };
 
 exports.approveTrack = (req, res) => {

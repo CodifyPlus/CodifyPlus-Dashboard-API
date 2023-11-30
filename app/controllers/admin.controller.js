@@ -447,14 +447,20 @@ exports.deleteUser = async (req, res) => {
 
 exports.sendNotification = async (req, res) => {
 
-    novu.trigger('codifyplus', {
-        to: {
-            subscriberId: req.body.username,
-        },
-        payload: {
-            description: req.body.content,
-        }
-    });
+    try {
+        novu.trigger('codifyplus', {
+            to: {
+                subscriberId: req.body.username,
+            },
+            payload: {
+                description: req.body.content,
+            }
+        });
+        res.status(200).json("Notification sent!");
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 
     /*
     NotificationBox.findOne({ belongsTo: req.body.username }).exec(async (err, notificationBox) => {

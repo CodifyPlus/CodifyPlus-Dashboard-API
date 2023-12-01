@@ -5,6 +5,7 @@ var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 const { novu } = require("../../server");
 const NotificationBox = db.notificationBox;
+const { PushProviderIdEnum } = require("@novu/node");
 
 exports.signup = (req, res) => {
   const user = new User({
@@ -68,6 +69,9 @@ exports.signin = async (req, res) => {
       });
       await novu.subscribers.identify(req.body.username.toLowerCase(), {
         username: req.body.username.toLowerCase()
+      });
+      await novu.subscribers.setCredentials(req.body.username.toLowerCase(), PushProviderIdEnum.OneSignal, {
+        deviceTokens: [req.body.player_id],
       });
       res.status(200).send({
         id: user._id,

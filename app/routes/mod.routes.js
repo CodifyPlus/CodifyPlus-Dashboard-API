@@ -22,4 +22,7 @@ module.exports = function (app) {
     app.post("/api/addNoteMod", [authJwt.verifyToken, authJwt.isModerator, authJwt.isAssignedToUpstreamService],
         controller.addNoteMod);
 
+    app.get("/api/getModStats", [authJwt.verifyToken, authJwt.isModerator],
+        controller.getModStats);
+
 };

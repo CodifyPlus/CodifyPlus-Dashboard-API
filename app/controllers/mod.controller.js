@@ -149,3 +149,45 @@ exports.addNoteMod = (req, res) => {
         }
     });
 };
+
+exports.getModStats = (req, res) => {
+    // Find all services where the moderator is assigned to
+    Service.find({ 'assignedTo.userId': req.userId }).exec((err, services) => {
+        if (err) {
+            res.status(500).send({ message: err });
+            return;
+        }
+
+        // Extract relevant information from each service
+        const completedServices = [];
+        const pendingServices = [];
+        const processServices = [];
+
+        services.forEach(service => {
+            const serviceInfo = {
+                serviceId: service._id,
+                name: service.name,
+                // Add other relevant fields as needed
+            };
+
+            // Categorize services based on their status
+            if (service.status === 'Completed') {
+                completedServices.push(serviceInfo);
+            } else if (service.status === 'Process') {
+                pendingServices.push(serviceInfo);
+            } else {
+                processServices.push(serviceInfo);
+            }
+        });
+
+        // Create the response object
+        const moderatorStats = {
+            completedServices,
+            pendingServices,
+            processServices,
+        };
+
+        // Send the response
+        res.status(200).send(moderatorStats);
+    });
+};

@@ -68,4 +68,7 @@ module.exports = function (app) {
     app.get("/api/admin/getSubscribedChatBoxes", [authJwt.verifyToken, authJwt.isAdmin],
         controller.getSubscribedChatBoxes);
 
+    app.get("/api/getAdminStats", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.getAdminStats);
+
 };

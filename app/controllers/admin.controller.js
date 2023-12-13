@@ -708,6 +708,7 @@ exports.getAdminStats = (req, res) => {
             const serviceInfo = {
                 serviceId: service._id,
                 name: service.name,
+                username: service.assignedFor.username,
                 // Add other relevant fields as needed
             };
 

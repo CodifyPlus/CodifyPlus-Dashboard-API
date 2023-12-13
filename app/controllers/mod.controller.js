@@ -82,20 +82,20 @@ exports.addTrackMod = (req, res) => {
                     return;
                 } else {
 
-                    const contentForEmail = `
-            Moderator have added a new track point to <b>"${updatedService.name}"</b>
-            <br>
-            <br>
-            Status: <b>${updatedService.pathway[updatedService.pathway.length - 1].title}</b>
-            <br>
-            Description: ${updatedService.pathway[updatedService.pathway.length - 1].description}
-            `;
+                    //         const contentForEmail = `
+                    // Moderator have added a new track point to <b>"${updatedService.name}"</b>
+                    // <br>
+                    // <br>
+                    // Status: <b>${updatedService.pathway[updatedService.pathway.length - 1].title}</b>
+                    // <br>
+                    // Description: ${updatedService.pathway[updatedService.pathway.length - 1].description}
+                    // `;
 
-                    const emailC = emailTemplate(contentForEmail);
+                    //         const emailC = emailTemplate(contentForEmail);
 
-                    const emailSubject = `Start-Up Kro - ${updatedService.name} - Status Update by Moderator!`
+                    //         const emailSubject = `Start-Up Kro - ${updatedService.name} - Status Update by Moderator!`
 
-                    sendEmail('operation.startupkro@gmail.com', emailC, emailSubject);
+                    //         sendEmail('operation.startupkro@gmail.com', emailC, emailSubject);
 
                     res.status(200).send(updatedService);
                     return;
@@ -128,20 +128,20 @@ exports.addNoteMod = (req, res) => {
                     return;
                 } else {
 
-                    const contentForEmail = `
-            A new notification has been added to the service "${updatedService.name}" by Moderator
-            <br>
-            <br>
-            Notification:
-            <br>
-            ${updatedService.notes[updatedService.notes.length - 1].information}
-            `;
+                    //         const contentForEmail = `
+                    // A new notification has been added to the service "${updatedService.name}" by Moderator
+                    // <br>
+                    // <br>
+                    // Notification:
+                    // <br>
+                    // ${updatedService.notes[updatedService.notes.length - 1].information}
+                    // `;
 
-                    const emailC = emailTemplate(contentForEmail);
+                    //         const emailC = emailTemplate(contentForEmail);
 
-                    const emailSubject = `Start-Up Kro - ${updatedService.name} - Notification added by Moderator!`
+                    //         const emailSubject = `Start-Up Kro - ${updatedService.name} - Notification added by Moderator!`
 
-                    sendEmail('operation.startupkro@gmail.com', emailC, emailSubject);
+                    //         sendEmail('operation.startupkro@gmail.com', emailC, emailSubject);
                     res.status(200).send(updatedService);
                     return;
                 }
@@ -167,6 +167,7 @@ exports.getModStats = (req, res) => {
             const serviceInfo = {
                 serviceId: service._id,
                 name: service.name,
+                username: service.assignedFor.username,
                 // Add other relevant fields as needed
             };
 

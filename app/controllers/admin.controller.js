@@ -207,32 +207,23 @@ exports.addNewService = async (req, res) => {
         notes: [],
     });
 
-    const chatBox = new ChatBox({
-        serviceName: name,
-        assignedFor: assignedForDoc.username,
-        participants: [assignedForDoc._id, assignedToDoc._id],
-        messages: [],
-    });
-
     service.save(async (err, service) => {
         if (err) {
             res.status(500).send({ message: err });
             return;
         }
-        const chatBoxSaved = await chatBox.save();
+        const chatBox = new ChatBox({
+            serviceName: name,
+            assignedFor: assignedForDoc.username,
+            participants: [assignedForDoc._id, assignedToDoc._id],
+            serviceId: service._id,
+            messages: [],
+        });
+        await chatBox.save();
         const user = await User.findOne({ username: assignedFor });
-        const moderator = await User.findOne({ username: assignedTo });
         user.processServices.push({
             serviceId: service._id,
             name: service.name,
-        });
-        user.participatingChatBoxIds.push(chatBoxSaved._id);
-        moderator.participatingChatBoxIds.push(chatBoxSaved._id);
-        moderator.save(err => {
-            if (err) {
-                res.status(500).send({ message: err });
-                return;
-            }
         });
         user.save(err => {
             if (err) {
@@ -473,8 +464,22 @@ exports.deleteService = async (req, res) => {
 };
 
 exports.deleteUser = async (req, res) => {
-    await User.findByIdAndDelete(req.body.userId);
-    res.status(200).send({ message: "Deleted!" });
+    try {
+        // Find the user by ID
+        const targetUser = await User.findByIdAndDelete(req.body.userId);
+
+        // Delete chatboxes where user's ID is in the participants array
+        if (targetUser.role === 'USER') {
+            await ChatBox.deleteMany({ participants: targetUser._id });
+        }
+
+        await Service.deleteMany({ 'assignedFor.userId': targetUser._id });
+
+        res.status(200).send({ message: "Deleted!" });
+    } catch (error) {
+        console.error("Error deleting user and chatboxes:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+    }
 };
 
 exports.sendNotification = async (req, res) => {
@@ -732,4 +737,20 @@ exports.getAdminStats = (req, res) => {
         // Send the response
         res.status(200).send(adminStats);
     });
+};
+
+exports.toggleTimelineDatesVisibility = async (req, res) => {
+    try {
+        // Find the service by ID
+        const targetService = await Service.findById(req.body.serviceId);
+
+        // Toggle the visibility of timeline dates
+        targetService.timelineDatesIsVisible = targetService.timelineDatesIsVisible !== undefined ? !targetService.timelineDatesIsVisible : false;
+
+        const updatedService = await targetService.save();
+        res.status(200).send(updatedService);
+    } catch (error) {
+        console.error("Error toggling dates!:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+    }
 };

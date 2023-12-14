@@ -4,6 +4,10 @@ const Service = mongoose.model(
   "Service",
   new mongoose.Schema({
     cost: String,
+    timelineDatesIsVisible: {
+      type: Boolean,
+      default: true
+    },
     name: String,
     status: String,
     assignedTo: {

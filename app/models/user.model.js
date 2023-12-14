@@ -7,7 +7,6 @@ const UserSchema = new mongoose.Schema({
   phone: String,
   role: String,
   status: String,
-  participatingChatBoxIds: [mongoose.Schema.Types.ObjectId],
   completedServices: [
     {
       serviceId: mongoose.Schema.Types.ObjectId,

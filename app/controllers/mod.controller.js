@@ -117,7 +117,6 @@ exports.addNoteMod = (req, res) => {
                 private: false,
                 approved: false,
                 createdAt: new Date(),
-                sendEmail: req.body.sendEmail
             };
 
             service.notes.push(newNote);

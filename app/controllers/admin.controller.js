@@ -424,10 +424,16 @@ exports.markAsCompleted = (req, res) => {
                             serviceId: updatedService._id,
                             name: updatedService.name,
                         });
-                    }
-                    if (!containsRequiredServiceId) {
                         const filteredArray = user.processServices.filter(obj => obj.serviceId.toString() !== updatedService._id.toString());
                         user.processServices = filteredArray;
+                    }
+                    if (containsRequiredServiceId) {
+                        const filteredArray = user.completedServices.filter(obj => obj.serviceId.toString() !== updatedService._id.toString());
+                        user.completedServices = filteredArray;
+                        user.processServices.push({
+                            serviceId: updatedService._id,
+                            name: updatedService.name,
+                        });
                     }
                     user.save(err => {
                         if (err) {
@@ -439,7 +445,6 @@ exports.markAsCompleted = (req, res) => {
                             return;
                         }
                     });
-
                 }
             });
         }
@@ -643,8 +648,6 @@ exports.approveNote = (req, res) => {
         else {
             const noteId = req.body.noteId;
             const note = service.notes.find((n) => n._id.toString() === noteId);
-            const toSendEmail = note.sendEmail;
-            note.sendEmail = false;
             note.approved = !note.approved;
             const indexOfNote = service.notes.findIndex((n) => n._id.toString() === noteId);
             service.save(async (err, updatedService) => {
@@ -652,23 +655,6 @@ exports.approveNote = (req, res) => {
                     res.status(500).send({ message: err });
                     return;
                 } else {
-                    if (toSendEmail) {
-                        const contentForEmail = `
-                        A new notification has been added to your service "${updatedService.name}"
-                        <br>
-                        <br>
-                        Notification:
-                        <br>
-                        ${updatedService.notes[indexOfNote].information}
-            `;
-
-                        const emailC = emailTemplate(contentForEmail);
-
-                        const emailSubject = `Start-Up Kro - ${updatedService.name} - Notification!`
-
-                        sendEmail(updatedService.assignedFor.email, emailC, emailSubject);
-
-                    }
                     res.status(200).send(updatedService);
                     return;
                 }
@@ -753,4 +739,33 @@ exports.toggleTimelineDatesVisibility = async (req, res) => {
         console.error("Error toggling dates!:", error);
         res.status(500).send({ message: "Internal Server Error" });
     }
+};
+
+exports.sendNoteEmail = (req, res) => {
+    Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
+        if (err) {
+            res.status(500).send({ message: err });
+            return;
+        }
+        else {
+            const noteId = req.body.noteId;
+            const indexOfNote = service.notes.findIndex((n) => n._id.toString() === noteId);
+            const contentForEmail = `
+                        A new notification has been added to your service "${service.name}"
+                        <br>
+                        <br>
+                        Notification:
+                        <br>
+                        ${service.notes[indexOfNote].information}
+            `;
+
+            const emailC = emailTemplate(contentForEmail);
+
+            const emailSubject = `Start-Up Kro - ${service.name} - Notification!`
+
+            sendEmail(service.assignedFor.email, emailC, emailSubject);
+
+            res.status(200).send("Note Sent!");
+        }
+    });
 };

@@ -74,4 +74,7 @@ module.exports = function (app) {
     app.post("/api/toggleTimelineDatesVisibility", [authJwt.verifyToken, authJwt.isAdmin],
         controller.toggleTimelineDatesVisibility);
 
+    app.post("/api/sendNoteEmail", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.sendNoteEmail);
+
 };

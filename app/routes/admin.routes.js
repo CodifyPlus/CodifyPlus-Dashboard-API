@@ -37,13 +37,6 @@ module.exports = function (app) {
     app.post("/api/addTrack", [authJwt.verifyToken, authJwt.isAdmin],
         controller.addTrack);
 
-    //TBD
-    app.post("/api/editNote", [authJwt.verifyToken, authJwt.isAdmin],
-        controller.addNewService);
-    //TBD
-    app.post("/api/editTrack", [authJwt.verifyToken, authJwt.isAdmin],
-        controller.addNewService);
-
     app.post("/api/editTrackStatus", [authJwt.verifyToken, authJwt.isAdmin],
         controller.editTrackStatus);
 
@@ -79,5 +72,8 @@ module.exports = function (app) {
 
     app.post("/api/sendNoteEmail", [authJwt.verifyToken, authJwt.isAdmin],
         controller.sendNoteEmail);
+
+    app.post("/api/editServiceDetails", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.editServiceDetails);
 
 };

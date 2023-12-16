@@ -9,6 +9,7 @@ const { PushProviderIdEnum } = require("@novu/node");
 
 exports.signup = (req, res) => {
   const user = new User({
+    fullname: req.body.fullname,
     username: req.body.username.toLowerCase(),
     email: req.body.email.toLowerCase(),
     password: bcrypt.hashSync(req.body.password, 8)

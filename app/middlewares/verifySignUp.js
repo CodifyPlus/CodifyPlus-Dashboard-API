@@ -17,6 +17,11 @@ checkDuplicateUsernameOrEmail = (req, res, next) => {
     return res.status(400).send({ message: "The password must contain at least one uppercase, lowercase, symbol, and a number, and length must be more than 8 characters" });
   }
 
+  //Check fullname length
+  if (req.body.fullname.length < 6 || req.body.fullname.length > 50) {
+    return res.status(400).send({ message: "The fullname must be more than 6 and less than 50 characters" });
+  }
+
   // Username
   User.findOne({
     username: req.body.username.toLowerCase()

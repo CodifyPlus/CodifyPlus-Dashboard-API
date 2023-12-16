@@ -71,6 +71,9 @@ module.exports = function (app) {
     app.get("/api/getAdminStats", [authJwt.verifyToken, authJwt.isAdmin],
         controller.getAdminStats);
 
+    app.get("/api/getUserStatsForAdmin", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.getUserStatsForAdmin);
+
     app.post("/api/toggleTimelineDatesVisibility", [authJwt.verifyToken, authJwt.isAdmin],
         controller.toggleTimelineDatesVisibility);
 

@@ -37,6 +37,9 @@ module.exports = function (app) {
     app.post("/api/addTrack", [authJwt.verifyToken, authJwt.isAdmin],
         controller.addTrack);
 
+    app.post("/api/editTrack", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.editTrack);
+
     app.post("/api/editTrackStatus", [authJwt.verifyToken, authJwt.isAdmin],
         controller.editTrackStatus);
 

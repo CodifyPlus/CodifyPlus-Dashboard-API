@@ -18,7 +18,7 @@ const Service = mongoose.model(
     pathway: [{
       startedAt: {
         type: Date,
-        default: Date.now
+        default: undefined
       },
       description: String,
       title: String,

@@ -2,11 +2,7 @@ const db = require("../models");
 const User = db.user;
 const Service = db.service;
 const ChatBox = db.chatBox;
-const NotificationBox = db.notificationBox;
-var jwt = require("jsonwebtoken");
-var bcrypt = require("bcryptjs");
-const { emailTemplate } = require("../templates/emailTemplate");
-const { sendEmail } = require("../config/emailer");
+const { sendTelegramMessage } = require("../config/telegram");
 
 exports.getAllServicesMod = (req, res) => {
     const username = req.query.username;
@@ -106,7 +102,7 @@ exports.addTrackMod = (req, res) => {
 };
 
 exports.addNoteMod = (req, res) => {
-    Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
+    Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec(async (err, service) => {
         if (err) {
             res.status(500).send({ message: err });
             return;
@@ -141,6 +137,11 @@ exports.addNoteMod = (req, res) => {
                     //         const emailSubject = `Start-Up Kro - ${updatedService.name} - Notification added by Moderator!`
 
                     //         sendEmail('operation.startupkro@gmail.com', emailC, emailSubject);
+                    const message = `Moderator ${service.assignedTo.username} added a note to ${service.name}.
+
+Note: ${newNote.information}`;
+                    await sendTelegramMessage(message);
+
                     res.status(200).send(updatedService);
                     return;
                 }

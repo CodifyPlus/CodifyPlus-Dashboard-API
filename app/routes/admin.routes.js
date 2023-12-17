@@ -79,4 +79,13 @@ module.exports = function (app) {
     app.post("/api/editServiceDetails", [authJwt.verifyToken, authJwt.isAdmin],
         controller.editServiceDetails);
 
+    app.get("/api/exportUsers", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.exportUsers);
+
+    app.get("/api/exportChats", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.exportChats);
+
+    app.get("/api/exportServices", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.exportServices);
+
 };

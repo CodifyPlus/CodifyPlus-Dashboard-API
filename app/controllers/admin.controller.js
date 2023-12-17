@@ -8,6 +8,8 @@ var bcrypt = require("bcryptjs");
 const { emailTemplate } = require("../templates/emailTemplate");
 const { sendEmail } = require("../config/emailer");
 const { novu } = require("../../server");
+const fs = require('fs');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 exports.getAllUsers = (req, res) => {
     const { page = 1, limit = 10 } = req.query;
@@ -866,3 +868,111 @@ exports.editTrack = (req, res) => {
         }
     });
 };
+
+exports.exportUsers = async (req, res) => {
+    const getCsvHeader = () => {
+        const userSchema = User.schema.obj;
+        return Object.keys(userSchema).map((field) => ({ id: field, title: field }));
+    };
+
+    try {
+        // Fetch all users from the database
+        const users = await User.find();
+
+        // Define the CSV file path
+        const csvFilePath = 'users.csv';
+
+        // Create a CSV writer with dynamically generated header
+        const csvWriter = createCsvWriter({
+            path: csvFilePath,
+            header: getCsvHeader(),
+        });
+
+        // Write users to the CSV file
+        await csvWriter.writeRecords(users);
+
+        // Send the CSV file as a response to the frontend
+        res.download(csvFilePath, 'users.csv', (err) => {
+            // Delete the CSV file after sending the response
+            fs.unlinkSync(csvFilePath);
+            if (err) {
+                console.error('Error sending CSV file:', err);
+            }
+        });
+    } catch (error) {
+        console.error('Error exporting users to CSV:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+exports.exportChats = async (req, res) => {
+    const getCsvHeader = () => {
+        const chatSchema = ChatBox.schema.obj;
+        return Object.keys(chatSchema).map((field) => ({ id: field, title: field }));
+    };
+
+    try {
+        // Fetch all chats from the database
+        const chats = await ChatBox.find();
+
+        // Define the CSV file path
+        const csvFilePath = 'chats.csv';
+
+        // Create a CSV writer with dynamically generated header
+        const csvWriter = createCsvWriter({
+            path: csvFilePath,
+            header: getCsvHeader(),
+        });
+
+        // Write chats to the CSV file
+        await csvWriter.writeRecords(chats);
+
+        // Send the CSV file as a response to the frontend
+        res.download(csvFilePath, 'chats.csv', (err) => {
+            // Delete the CSV file after sending the response
+            fs.unlinkSync(csvFilePath);
+            if (err) {
+                console.error('Error sending CSV file:', err);
+            }
+        });
+    } catch (error) {
+        console.error('Error exporting chats to CSV:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+exports.exportServices = async (req, res) => {
+    const getCsvHeader = () => {
+        const serviceSchema = Service.schema.obj;
+        return Object.keys(serviceSchema).map((field) => ({ id: field, title: field }));
+    };
+
+    try {
+        // Fetch all services from the database
+        const services = await Service.find();
+
+        // Define the CSV file path
+        const csvFilePath = 'services.csv';
+
+        // Create a CSV writer with dynamically generated header
+        const csvWriter = createCsvWriter({
+            path: csvFilePath,
+            header: getCsvHeader(),
+        });
+
+        // Write services to the CSV file
+        await csvWriter.writeRecords(services);
+
+        // Send the CSV file as a response to the frontend
+        res.download(csvFilePath, 'services.csv', (err) => {
+            // Delete the CSV file after sending the response
+            fs.unlinkSync(csvFilePath);
+            if (err) {
+                console.error('Error sending CSV file:', err);
+            }
+        });
+    } catch (error) {
+        console.error('Error exporting services to CSV:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}

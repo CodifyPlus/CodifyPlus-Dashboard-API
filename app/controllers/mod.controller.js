@@ -140,7 +140,7 @@ exports.addNoteMod = (req, res) => {
                     const message = `Moderator ${service.assignedTo.username} added a note to ${service.name}.
 
 Note: ${newNote.information}`;
-                    await sendTelegramMessage(message);
+                    sendTelegramMessage(message);
 
                     res.status(200).send(updatedService);
                     return;

@@ -1,7 +1,6 @@
 const { novu } = require("../../../server");
 
 exports.sendNotification = async (req, res) => {
-
     try {
         novu.trigger('codifyplus', {
             to: {
@@ -13,7 +12,6 @@ exports.sendNotification = async (req, res) => {
         });
         res.status(200).json("Notification sent!");
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).send({ message: error.message });
     }
 };

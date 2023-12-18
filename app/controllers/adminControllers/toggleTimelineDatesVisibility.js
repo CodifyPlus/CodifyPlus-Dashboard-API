@@ -12,7 +12,6 @@ exports.toggleTimelineDatesVisibility = async (req, res) => {
         const updatedService = await targetService.save();
         res.status(200).send(updatedService);
     } catch (error) {
-        console.error("Error toggling dates!:", error);
         res.status(500).send({ message: "Internal Server Error" });
     }
 };

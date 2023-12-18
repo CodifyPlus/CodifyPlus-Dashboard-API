@@ -2,8 +2,8 @@ const db = require("../../models");
 const User = db.user;
 
 exports.getAllUsers = (req, res) => {
-    const { page = 1, limit = 10 } = req.query;
     try {
+        const { page = 1, limit = 10 } = req.query;
         // Fetch users
         User.find({})
             .skip((page - 1) * limit)

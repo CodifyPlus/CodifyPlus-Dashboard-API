@@ -17,7 +17,6 @@ exports.deleteUser = async (req, res) => {
 
         res.status(200).send({ message: "Deleted!" });
     } catch (error) {
-        console.error("Error deleting user and chatboxes:", error);
         res.status(500).send({ message: "Internal Server Error" });
     }
 };

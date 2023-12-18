@@ -15,7 +15,6 @@ exports.getSubscribedChatBoxes = async (req, res) => {
 
         res.status(200).json({ chatBoxes: chatBoxesWithMessageSize });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).send({ message: error.message });
     }
 };

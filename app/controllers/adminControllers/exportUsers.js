@@ -30,11 +30,10 @@ exports.exportUsers = async (req, res) => {
             // Delete the CSV file after sending the response
             fs.unlinkSync(csvFilePath);
             if (err) {
-                console.error('Error sending CSV file:', err);
+                res.status(500).send({ message: err.message });
             }
         });
     } catch (error) {
-        console.error('Error exporting users to CSV:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).send({ message: error.message });
     }
 }

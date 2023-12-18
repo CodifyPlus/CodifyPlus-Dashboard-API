@@ -16,16 +16,22 @@ exports.editServiceDetails = async (req, res) => {
                 service.name = req.body.name;
                 service.cost = req.body.cost;
                 service.duration = req.body.duration;
-                if (req.body.assignedTo.toLowerCase() !== service.assignedTo.username) {
-                    const newModerator = await User.findOne({ username: req.body.assignedTo });
-                    service.assignedTo = {
-                        username: newModerator.username,
-                        userId: newModerator._id,
-                        email: newModerator.email,
-                    };
-                    const associatedChatBox = await ChatBox.findOne({ serviceId: service._id });
-                    associatedChatBox.participants = [newModerator._id, service.assignedFor.userId];
-                    await associatedChatBox.save();
+                try {
+                    if (req.body.assignedTo.toLowerCase() !== service.assignedTo.username) {
+                        const newModerator = await User.findOne({ username: req.body.assignedTo });
+                        service.assignedTo = {
+                            username: newModerator.username,
+                            userId: newModerator._id,
+                            email: newModerator.email,
+                        };
+                        const associatedChatBox = await ChatBox.findOne({ serviceId: service._id });
+                        associatedChatBox.participants = [newModerator._id, service.assignedFor.userId];
+                        await associatedChatBox.save();
+                    }
+                }
+                catch (err) {
+                    res.status(500).send({ message: err.message });
+                    return;
                 }
 
                 service.save(async (err, updatedService) => {

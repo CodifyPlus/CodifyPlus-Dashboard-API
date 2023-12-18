@@ -6,6 +6,7 @@ const { emailTemplate } = require("../templates/emailTemplate");
 const { sendEmail } = require("../config/emailer");
 const { novu } = require("../../server");
 const fs = require('fs');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const { getAllUsers } = require("./adminControllers/getAllUsers");
 const { changeUserRole } = require("./adminControllers/changeUserRole");
 const { addNewUser } = require("./adminControllers/addNewUser");
@@ -17,7 +18,9 @@ const { addNote } = require("./adminControllers/addNote");
 const { addTrack } = require("./adminControllers/addTrack");
 const { editTrackStatus } = require("./adminControllers/editTrackStatus");
 const { markAsCompleted } = require("./adminControllers/markAsCompleted");
-const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const { deleteService } = require("./adminControllers/deleteService");
+const { deleteUser } = require("./adminControllers/deleteUser");
+const { sendNotification } = require("./adminControllers/sendNotification");
 
 exports.getAllUsers = getAllUsers;
 exports.changeUserRole = changeUserRole;
@@ -30,150 +33,9 @@ exports.addNote = addNote;
 exports.addTrack = addTrack;
 exports.editTrackStatus = editTrackStatus;
 exports.markAsCompleted = markAsCompleted;
-
-exports.deleteService = async (req, res) => {
-    const targetService = await Service.findById(req.body.serviceId);
-    const targetUser = await User.findOne({ username: targetService.assignedFor.username });
-
-    const processIndex = targetUser.processServices.findIndex(service => service.serviceId.toString() === req.body.serviceId);
-    const completeIndex = targetUser.completedServices.findIndex(service => service.serviceId.toString() === req.body.serviceId);
-
-    targetUser.processServices.splice(processIndex, 1);
-    targetUser.completedServices.splice(completeIndex, 1);
-
-    await Service.findByIdAndDelete(req.body.serviceId);
-
-    await targetUser.save();
-
-    res.status(200).send({ message: "Deleted!" });
-};
-
-exports.deleteUser = async (req, res) => {
-    try {
-        // Find the user by ID
-        const targetUser = await User.findByIdAndDelete(req.body.userId);
-
-        // Delete chatboxes where user's ID is in the participants array
-        if (targetUser.role === 'USER') {
-            await ChatBox.deleteMany({ participants: targetUser._id });
-        }
-
-        await Service.deleteMany({ 'assignedFor.userId': targetUser._id });
-
-        res.status(200).send({ message: "Deleted!" });
-    } catch (error) {
-        console.error("Error deleting user and chatboxes:", error);
-        res.status(500).send({ message: "Internal Server Error" });
-    }
-};
-
-exports.sendNotification = async (req, res) => {
-
-    try {
-        novu.trigger('codifyplus', {
-            to: {
-                subscriberId: req.body.username,
-            },
-            payload: {
-                description: req.body.content,
-            }
-        });
-        res.status(200).json("Notification sent!");
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-
-    /*
-    NotificationBox.findOne({ belongsTo: req.body.username }).exec(async (err, notificationBox) => {
-        if (err) {
-            res.status(500).send({ message: err });
-            return;
-        }
-        else {
-            if (!notificationBox) {
-                const newNotificationBox = new NotificationBox({
-                    belongsTo: req.query.username,
-                    notifications: [],
-                });
-                await newNotificationBox.save();
-            }
-            const newNotification = {
-                title: req.body.title,
-                content: req.body.content,
-                createdAt: new Date()
-            };
-
-            if (notificationBox) {
-
-                notificationBox.notifications.push(newNotification);
-
-                notificationBox.save(async (err, updatedNotificationBox) => {
-                    if (err) {
-                        res.status(500).send({ message: err });
-                        return;
-                    } else {
-
-                        if (req.body.sendEmail) {
-                            const contentForEmail = `
-                  You have received a new notification from Start-up Kro
-                  <br>
-                  <br>
-                  Notification:
-                  <br>
-                  ${updatedNotificationBox.notifications[updatedNotificationBox.notifications.length - 1].content}
-                  `;
-
-                            const emailC = emailTemplate(contentForEmail);
-
-                            const emailSubject = `Start-Up Kro - New Notification!`
-
-                            await sendEmail(targetUser.email, emailC, emailSubject);
-
-                        }
-
-                        res.status(200).send(updatedNotificationBox);
-                        return;
-                    }
-                });
-            }
-            else {
-                newNotificationBox.notifications.push(newNotification);
-
-                newNotificationBox.save(async (err, updatedNotificationBox) => {
-                    if (err) {
-                        res.status(500).send({ message: err });
-                        return;
-                    } else {
-
-                        if (req.body.sendEmail) {
-                            const contentForEmail = `
-                  You have received a new notification from Start-up Kro
-                  <br>
-                  <br>
-                  Notification:
-                  <br>
-                  ${updatedNotificationBox.notifications[updatedNotificationBox.notifications.length - 1].content}
-                  `;
-
-                            const emailC = emailTemplate(contentForEmail);
-
-                            const emailSubject = `Start-Up Kro - New Notification!`
-
-                            sendEmail(targetUser.email, emailC, emailSubject);
-
-                        }
-
-                        res.status(200).send(updatedNotificationBox);
-                        return;
-                    }
-                });
-            }
-
-        }
-    });
-    */
-};
+exports.deleteService = deleteService;
+exports.deleteUser = deleteUser;
+exports.sendNotification = sendNotification;
 
 exports.approveTrack = (req, res) => {
     Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {

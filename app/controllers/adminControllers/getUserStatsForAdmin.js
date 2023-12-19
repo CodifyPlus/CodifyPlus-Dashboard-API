@@ -1,21 +1,18 @@
 const db = require("../../models");
 const User = db.user;
 
-exports.getUserStatsForAdmin = (req, res) => {
+exports.getUserStatsForAdmin = async (req, res) => {
     try {
-        User.findById(req.query.userId).exec((err, user) => {
-            if (err) {
-                res.status(500).send({ message: err });
-                return;
-            }
-            else {
-                res.status(200).send(user);
-                return;
-            }
-        });
-    }
-    catch (err) {
+        const userId = req.query.userId;
+
+        // Fetch user by ID
+        const user = await User.findById(userId).exec();
+
+        // Send the response
+        res.status(200).send(user);
+    } catch (err) {
+        // Handle errors
+        console.error(err);
         res.status(500).send({ message: err.message });
-        return;
     }
 };

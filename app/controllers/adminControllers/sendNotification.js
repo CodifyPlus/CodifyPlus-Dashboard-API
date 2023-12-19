@@ -2,16 +2,23 @@ const { novu } = require("../../../server");
 
 exports.sendNotification = async (req, res) => {
     try {
-        novu.trigger('codifyplus', {
+        const { username, content } = req.body;
+
+        // Trigger the notification
+        await novu.trigger('codifyplus', {
             to: {
-                subscriberId: req.body.username,
+                subscriberId: username,
             },
             payload: {
-                description: req.body.content,
+                description: content,
             }
         });
+
+        // Send success response
         res.status(200).json("Notification sent!");
     } catch (error) {
+        // Handle errors
+        console.error(error);
         res.status(500).send({ message: error.message });
     }
 };

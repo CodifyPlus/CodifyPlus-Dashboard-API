@@ -3,52 +3,59 @@ const Service = db.service;
 const { emailTemplate } = require("../../templates/emailTemplate");
 const { sendEmail } = require("../../config/emailer");
 
-exports.approveTrack = (req, res) => {
+exports.approveTrack = async (req, res) => {
     try {
-        Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
-            if (err) {
-                res.status(500).send({ message: err });
-                return;
-            }
-            else {
-                const pathwayId = req.body.pathwayId;
-                const pathway = service.pathway.find((p) => p._id.toString() === pathwayId);
-                const toSendEmail = pathway.sendEmail;
-                pathway.sendEmail = false;
-                pathway.approved = !pathway.approved;
-                const indexOfPoint = service.pathway.findIndex((p) => p._id.toString() === pathwayId);
+        const serviceId = db.mongoose.Types.ObjectId(req.body.serviceId);
 
-                service.save(async (err, updatedService) => {
-                    if (err) {
-                        res.status(500).send({ message: err });
-                        return;
-                    } else {
-                        if (toSendEmail) {
-                            const contentForEmail = `
-            Check current status for your service <b>"${updatedService.name}"</b>
-            <br>
-            <br>
-            Status: <b>${updatedService.pathway[indexOfPoint].title}</b>
-            <br>
-            Description: ${updatedService.pathway[indexOfPoint].description}
+        // Find the service by ID
+        const service = await Service.findById(serviceId);
+
+        if (!service) {
+            res.status(404).send({ message: "Service not found" });
+            return;
+        }
+
+        const pathwayId = req.body.pathwayId;
+        const pathway = service.pathway.find((p) => p._id.toString() === pathwayId);
+
+        if (!pathway) {
+            res.status(404).send({ message: "Pathway not found" });
+            return;
+        }
+
+        const toSendEmail = pathway.sendEmail;
+        pathway.sendEmail = false;
+
+        // Toggle the approval status of the track point
+        pathway.approved = !pathway.approved;
+
+        // Save the updated service
+        const updatedService = await service.save();
+
+        // Send email if requested
+        //TODO: REMOVE EMAIL SEND LOGIC FROM MODERATOR FRONTEND ADD TRACK POINT FORM
+        if (false || toSendEmail) {
+            const indexOfPoint = updatedService.pathway.findIndex((p) => p._id.toString() === pathwayId);
+
+            const contentForEmail = `
+                Check current status for your service <b>"${updatedService.name}"</b>
+                <br>
+                <br>
+                Status: <b>${updatedService.pathway[indexOfPoint].title}</b>
+                <br>
+                Description: ${updatedService.pathway[indexOfPoint].description}
             `;
 
-                            const emailC = emailTemplate(contentForEmail);
+            const emailContent = emailTemplate(contentForEmail);
+            const emailSubject = `Start-Up Kro - ${updatedService.name} - Status Update!`;
 
-                            const emailSubject = `Start-Up Kro - ${updatedService.name} - Status Update!`
+            sendEmail(updatedService.assignedFor.email, emailContent, emailSubject);
+        }
 
-                            sendEmail(updatedService.assignedFor.email, emailC, emailSubject);
-
-                        }
-                        res.status(200).send(updatedService);
-                        return;
-                    }
-                });
-            }
-        });
-    }
-    catch (err) {
+        res.status(200).send(updatedService);
+    } catch (err) {
+        // Handle errors
+        console.error(err);
         res.status(500).send({ message: err.message });
-        return;
     }
 };

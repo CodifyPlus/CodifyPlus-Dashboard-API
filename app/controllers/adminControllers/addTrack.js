@@ -3,57 +3,54 @@ const Service = db.service;
 const { emailTemplate } = require("../../templates/emailTemplate");
 const { sendEmail } = require("../../config/emailer");
 
-exports.addTrack = (req, res) => {
+exports.addTrack = async (req, res) => {
     try {
-        Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec((err, service) => {
-            if (err) {
-                res.status(500).send({ message: err });
-                return;
-            }
-            else {
-                const newTrackPoint = {
-                    description: req.body.description,
-                    title: req.body.title,
-                    startedAt: req.body.startedAt,
-                    approved: true,
-                    status: req.body.status,
-                };
+        const serviceId = db.mongoose.Types.ObjectId(req.body.serviceId);
 
-                service.pathway.push(newTrackPoint);
+        // Find the service by ID
+        const service = await Service.findById(serviceId);
 
-                service.save(async (err, updatedService) => {
-                    if (err) {
-                        res.status(500).send({ message: err });
-                        return;
-                    } else {
+        if (!service) {
+            res.status(404).send({ message: "Service not found" });
+            return;
+        }
 
-                        if (req.body.sendEmail) {
-                            const contentForEmail = `
-            Check current status for your service <b>"${updatedService.name}"</b>
-            <br>
-            <br>
-            Status: <b>${updatedService.pathway[updatedService.pathway.length - 1].title}</b>
-            <br>
-            Description: ${updatedService.pathway[updatedService.pathway.length - 1].description}
+        // Create a new track point
+        const newTrackPoint = {
+            description: req.body.description,
+            title: req.body.title,
+            startedAt: req.body.startedAt,
+            approved: true,
+            status: req.body.status,
+        };
+
+        // Add the new track point to the service
+        service.pathway.push(newTrackPoint);
+
+        // Save the updated service
+        const updatedService = await service.save();
+
+        // Send email if requested
+        if (req.body.sendEmail) {
+            const contentForEmail = `
+                Check current status for your service <b>"${updatedService.name}"</b>
+                <br>
+                <br>
+                Status: <b>${updatedService.pathway[updatedService.pathway.length - 1].title}</b>
+                <br>
+                Description: ${updatedService.pathway[updatedService.pathway.length - 1].description}
             `;
 
-                            const emailC = emailTemplate(contentForEmail);
+            const emailContent = emailTemplate(contentForEmail);
+            const emailSubject = `Start-Up Kro - ${updatedService.name} - Status Update!`;
 
-                            const emailSubject = `Start-Up Kro - ${updatedService.name} - Status Update!`
+            sendEmail(updatedService.assignedFor.email, emailContent, emailSubject);
+        }
 
-                            sendEmail(updatedService.assignedFor.email, emailC, emailSubject);
-
-                        }
-
-                        res.status(200).send(updatedService);
-                        return;
-                    }
-                });
-            }
-        });
-    }
-    catch (err) {
+        res.status(200).send(updatedService);
+    } catch (err) {
+        // Handle errors
+        console.error(err);
         res.status(500).send({ message: err.message });
-        return;
     }
 };

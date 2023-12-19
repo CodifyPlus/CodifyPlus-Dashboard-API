@@ -7,71 +7,79 @@ const { sendEmail } = require("../../config/emailer");
 
 exports.editServiceDetails = async (req, res) => {
     try {
-        Service.findById(db.mongoose.Types.ObjectId(req.body.serviceId)).exec(async (err, service) => {
-            if (err) {
-                res.status(500).send({ message: err });
-                return;
-            }
-            else {
-                service.name = req.body.name;
-                service.cost = req.body.cost;
-                service.duration = req.body.duration;
-                try {
-                    if (req.body.assignedTo.toLowerCase() !== service.assignedTo.username) {
-                        const newModerator = await User.findOne({ username: req.body.assignedTo });
-                        service.assignedTo = {
-                            username: newModerator.username,
-                            userId: newModerator._id,
-                            email: newModerator.email,
-                        };
-                        const associatedChatBox = await ChatBox.findOne({ serviceId: service._id });
-                        associatedChatBox.participants = [newModerator._id, service.assignedFor.userId];
-                        await associatedChatBox.save();
-                    }
-                }
-                catch (err) {
-                    res.status(500).send({ message: err.message });
+        const serviceId = db.mongoose.Types.ObjectId(req.body.serviceId);
+
+        // Find the service by ID
+        const service = await Service.findById(serviceId).exec();
+
+        if (!service) {
+            res.status(404).send({ message: "Service not found" });
+            return;
+        }
+
+        // Update service details
+        service.name = req.body.name;
+        service.cost = req.body.cost;
+        service.duration = req.body.duration;
+
+        try {
+            if (req.body.assignedTo.toLowerCase() !== service.assignedTo.username) {
+                const newModerator = await User.findOne({ username: req.body.assignedTo });
+
+                if (!newModerator) {
+                    res.status(404).send({ message: "Assigned user not found" });
                     return;
                 }
 
-                service.save(async (err, updatedService) => {
-                    if (err) {
-                        res.status(500).send({ message: err });
-                        return;
-                    } else {
-                        if (req.body.sendEmailToAssignee) {
-                            const contentForEmail = `
-        You have been assigned a new service.
-        <br>
-        <br>
-        Service details are as follows:
-        <br>
-        Service Name: ${updatedService.name}
-        <br>
-        Service Duration: ${updatedService.duration}
-        <br>
-        User's Name: ${updatedService.assignedFor.username}
-        <br>
-        <a href="dashboard.codifyplus.com"> Login Now!</a>
-        `;
+                // Update assignedTo details
+                service.assignedTo = {
+                    username: newModerator.username,
+                    userId: newModerator._id,
+                    email: newModerator.email,
+                };
 
-                            const emailC = emailTemplate(contentForEmail);
-
-                            const emailSubject = `Start-Up Kro - New Service Assigned!`
-
-                            await sendEmail(updatedService.assignedTo.email, emailC, emailSubject);
-
-                        }
-
-                        res.status(200).send(updatedService);
-                        return;
-                    }
-                });
+                // Update associated chatbox participants
+                const associatedChatBox = await ChatBox.findOne({ serviceId: service._id });
+                if (associatedChatBox) {
+                    associatedChatBox.participants = [newModerator._id, service.assignedFor.userId];
+                    await associatedChatBox.save();
+                }
             }
-        });
-    }
-    catch (err) {
+        } catch (err) {
+            res.status(500).send({ message: err.message });
+            return;
+        }
+
+        // Save the updated service
+        const updatedService = await service.save();
+
+        // Send email if requested
+        if (req.body.sendEmailToAssignee) {
+            const contentForEmail = `
+                You have been assigned a new service.
+                <br>
+                <br>
+                Service details are as follows:
+                <br>
+                Service Name: ${updatedService.name}
+                <br>
+                Service Duration: ${updatedService.duration}
+                <br>
+                User's Name: ${updatedService.assignedFor.username}
+                <br>
+                <a href="dashboard.codifyplus.com"> Login Now!</a>
+            `;
+
+            const emailContent = emailTemplate(contentForEmail);
+            const emailSubject = `Start-Up Kro - New Service Assigned!`;
+
+            await sendEmail(updatedService.assignedTo.email, emailContent, emailSubject);
+        }
+
+        res.status(200).send(updatedService);
+    } catch (err) {
+        // Handle errors
+        console.error(err);
         res.status(500).send({ message: err.message });
-        return;
     }
 };

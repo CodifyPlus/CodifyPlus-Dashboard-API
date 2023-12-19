@@ -1,27 +1,22 @@
 const db = require("../../models");
 const User = db.user;
 
-exports.getAllModerators = (req, res) => {
+exports.getAllModerators = async (req, res) => {
     try {
-        User.find({ role: { $in: ['MODERATOR', 'ADMIN'] } }, "username").exec((err, moderators) => {
-            if (err) {
-                res.status(500).send({ message: err });
-                return;
-            }
-            else {
-                const usernames = moderators.map(user => {
-                    return {
-                        value: user.username,
-                        label: user.username
-                    }
-                });
-                res.status(200).send(usernames);
-                return;
-            }
-        });
-    }
-    catch (err) {
+        // Find all moderators and admins
+        const moderators = await User.find({ role: { $in: ['MODERATOR', 'ADMIN'] } }, "username").exec();
+
+        // Map the usernames for response
+        const usernames = moderators.map(user => ({
+            value: user.username,
+            label: user.username
+        }));
+
+        // Send the response
+        res.status(200).send(usernames);
+    } catch (err) {
+        // Handle errors
+        console.error(err);
         res.status(500).send({ message: err.message });
-        return;
     }
 };

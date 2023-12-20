@@ -13,6 +13,9 @@ module.exports = function (app) {
     app.get("/api/getAllUsers", [authJwt.verifyToken, authJwt.isAdmin],
         controller.getAllUsers);
 
+    app.get("/api/getAllTemplates", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.getAllTemplates);
+
     app.post("/api/changeUserRole", [authJwt.verifyToken, authJwt.isAdmin],
         controller.changeUserRole);
 
@@ -25,6 +28,9 @@ module.exports = function (app) {
     app.get("/api/getAllUsernames", [authJwt.verifyToken, authJwt.isAdmin],
         controller.getAllUsernames);
 
+    app.get("/api/getTemplateNames", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.getTemplateNames);
+
     app.get("/api/getAllModerators", [authJwt.verifyToken, authJwt.isAdmin],
         controller.getAllModerators);
 
@@ -34,8 +40,14 @@ module.exports = function (app) {
     app.post("/api/addNote", [authJwt.verifyToken, authJwt.isAdmin],
         controller.addNote);
 
+    app.post("/api/addTemplate", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.addTemplate);
+
     app.post("/api/addTrack", [authJwt.verifyToken, authJwt.isAdmin],
         controller.addTrack);
+
+    app.post("/api/addTemplateTrack", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.addTemplateTrack);
 
     app.post("/api/editTrack", [authJwt.verifyToken, authJwt.isAdmin],
         controller.editTrack);
@@ -87,5 +99,8 @@ module.exports = function (app) {
 
     app.get("/api/exportServices", [authJwt.verifyToken, authJwt.isAdmin],
         controller.exportServices);
+
+    app.get("/api/getTemplateInfo", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.getTemplateInfo);
 
 };

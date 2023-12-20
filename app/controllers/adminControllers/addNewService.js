@@ -2,6 +2,7 @@ const db = require("../../models");
 const User = db.user;
 const Service = db.service;
 const ChatBox = db.chatBox;
+const Template = db.template;
 const { emailTemplate } = require("../../templates/emailTemplate");
 const { sendEmail } = require("../../config/emailer");
 
@@ -13,12 +14,20 @@ exports.addNewService = async (req, res) => {
         const assignedForDoc = await User.findOne({ username: assignedFor });
         const assignedToDoc = await User.findOne({ username: assignedTo });
 
+        let pathway = [{ description: "Service has been initiated!", title: "Service initiated!", status: true }];
+
+        // Check if template is required
+        if (req.body.templateName) {
+            const template = await Template.findOne({ templateName: req.body.templateName });
+            pathway = template.pathway;
+        }
+
         // Create a new Service instance
         const service = new Service({
             name,
             cost: req.body.cost,
             status: "Pending",
-            pathway: [{ description: "Service has been initiated!", title: "Service initiated!", status: true }],
+            pathway: pathway,
             duration: req.body.duration,
             assignedFor: {
                 username: assignedForDoc.username,

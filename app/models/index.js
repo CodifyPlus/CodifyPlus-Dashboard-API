@@ -7,6 +7,7 @@ db.mongoose = mongoose;
 
 db.user = require("./user.model");
 db.service = require("./service.model");
+db.template = require("./template.model");
 db.chatBox = require("./chatBox.model");
 db.notificationBox = require("./notifications.model");
 

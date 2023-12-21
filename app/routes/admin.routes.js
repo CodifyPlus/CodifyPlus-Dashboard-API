@@ -103,4 +103,10 @@ module.exports = function (app) {
     app.get("/api/getTemplateInfo", [authJwt.verifyToken, authJwt.isAdmin],
         controller.getTemplateInfo);
 
+    app.get("/api/getTotalRevenueByService", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.getTotalRevenueByService);
+
+    app.get("/api/getServicesSoldData", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.getServicesSoldData);
+
 };

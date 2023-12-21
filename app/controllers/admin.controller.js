@@ -29,6 +29,8 @@ const { addTemplate } = require("./adminControllers/addTemplate");
 const { getTemplateInfo } = require("./adminControllers/getTemplateInfo");
 const { addTemplateTrack } = require("./adminControllers/addTemplateTrack");
 const { getTemplateNames } = require("./adminControllers/getTemplateNames");
+const { getTotalRevenueByService } = require("./adminControllers/getTotalRevenueByService");
+const { getServicesSoldData } = require("./adminControllers/getServicesSoldData");
 
 exports.getAllUsers = getAllUsers;
 exports.changeUserRole = changeUserRole;
@@ -61,3 +63,5 @@ exports.addTemplate = addTemplate;
 exports.getTemplateInfo = getTemplateInfo;
 exports.addTemplateTrack = addTemplateTrack;
 exports.getTemplateNames = getTemplateNames;
+exports.getTotalRevenueByService = getTotalRevenueByService;
+exports.getServicesSoldData = getServicesSoldData;

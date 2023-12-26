@@ -96,6 +96,10 @@ exports.forgotPassword = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    if (user.resetPasswordToken && user.resetPasswordExpires > Date.now()) {
+      return res.status(400).json({ message: "Password reset email already sent, Please wait for the previous one to expire" });
+    }
+
     const resetToken = crypto.randomBytes(20).toString("hex");
     user.resetPasswordToken = resetToken;
     user.resetPasswordExpires = Date.now() + 1800000; // Token expires in 30 minutes

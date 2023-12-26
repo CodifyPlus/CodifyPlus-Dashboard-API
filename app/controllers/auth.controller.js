@@ -6,6 +6,9 @@ var bcrypt = require("bcryptjs");
 const { novu } = require("../../server");
 const NotificationBox = db.notificationBox;
 const { PushProviderIdEnum } = require("@novu/node");
+const crypto = require("crypto");
+const { sendEmail } = require("../config/emailer");
+const { emailTemplate } = require("../templates/emailTemplate");
 
 exports.signup = (req, res) => {
   const user = new User({
@@ -82,4 +85,76 @@ exports.signin = async (req, res) => {
         accessToken: token
       });
     });
+};
+
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const resetToken = crypto.randomBytes(20).toString("hex");
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 1800000; // Token expires in 30 minutes
+
+    await user.save();
+
+    // Send an email with a link containing the resetToken
+    const contentForEmail = `
+                Please use this link to securely reset your password. This link will remain active for <b>30 minutes</b>. This email is intended for <b>${user.username}</b>'s account associated with CodifyPlus.
+                <br>
+                <br>
+                <b>Please note, your new password must contain at least 8 characters, including an uppercase letter, a lowercase letter, and a number.</b>
+                <br>
+                <br>
+                <a href="https://dashboard.codifyplus.com/reset-password/${resetToken}">Reset Password</a>
+                <br>
+                <br>
+                If you did not request a password reset, please ignore this email.
+            `;
+    const emailContent = emailTemplate(contentForEmail);
+    const emailSubject = `Start-Up Kro - Forgot Password!`;
+    sendEmail(user.email, emailContent, emailSubject);
+
+    return res.status(200).json({ message: "Password reset email sent" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: req.body.token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/.test(req.body.newPassword)) {
+      return res.status(400).send({ message: "The password must contain at least one uppercase, lowercase, symbol, and a number, and length must be more than 8 characters" });
+    }
+
+    if (req.body.confirmNewPassword !== req.body.newPassword) {
+      return res.status(400).send({ message: "Passwords do not match" });
+    }
+
+    // Set the new password
+    user.password = bcrypt.hashSync(req.body.newPassword, 8);
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+
+    await user.save();
+
+    return res.status(200).json({ message: "Password reset successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };

@@ -6,6 +6,8 @@ const UserSchema = new mongoose.Schema({
   password: String,
   phone: String,
   role: String,
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
   status: String,
   completedServices: [
     {

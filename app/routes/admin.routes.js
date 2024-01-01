@@ -109,4 +109,7 @@ module.exports = function (app) {
     app.get("/api/getServicesSoldData", [authJwt.verifyToken, authJwt.isAdmin],
         controller.getServicesSoldData);
 
+    app.post("/api/deleteTemplate", [authJwt.verifyToken, authJwt.isAdmin],
+        controller.deleteTemplate);
+
 };

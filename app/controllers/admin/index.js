@@ -31,6 +31,7 @@ const { addTemplateTrack } = require("./addTemplateTrack");
 const { getTemplateNames } = require("./getTemplateNames");
 const { getTotalRevenueByService } = require("./getTotalRevenueByService");
 const { getServicesSoldData } = require("./getServicesSoldData");
+const { deleteTemplate } = require("./deleteTemplate");
 
 exports.getAllUsers = getAllUsers;
 exports.changeUserRole = changeUserRole;
@@ -65,3 +66,4 @@ exports.addTemplateTrack = addTemplateTrack;
 exports.getTemplateNames = getTemplateNames;
 exports.getTotalRevenueByService = getTotalRevenueByService;
 exports.getServicesSoldData = getServicesSoldData;
+exports.deleteTemplate = deleteTemplate;

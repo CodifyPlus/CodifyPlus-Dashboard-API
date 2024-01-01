@@ -1,6 +1,7 @@
 const db = require("../../models");
 const User = db.user;
 const Service = db.service;
+const ChatBox = db.chatBox;
 
 exports.deleteService = async (req, res) => {
     try {
@@ -25,6 +26,7 @@ exports.deleteService = async (req, res) => {
         }
 
         await Service.findByIdAndDelete(req.body.serviceId);
+        await ChatBox.findOneAndDelete({ serviceId: req.body.serviceId });
         await targetUser.save();
 
         res.status(200).send({ message: "Deleted!" });

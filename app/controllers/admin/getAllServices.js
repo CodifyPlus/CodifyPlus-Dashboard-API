@@ -3,16 +3,48 @@ const Service = db.service;
 
 exports.getAllServices = async (req, res) => {
     try {
-        const { page = 1, limit = 10 } = req.query;
+        let { page = 1, limit = 10, search = "", advancedSearch = false } = req.query;
+        advancedSearch === "true" ? advancedSearch = true : advancedSearch = false;
+
+        let searchQuery = {
+            $or: [
+                { name: { $regex: new RegExp(search, "i") } },
+                { status: { $regex: new RegExp(search, "i") } },
+                { cost: { $regex: new RegExp(search, "i") } },
+                { duration: { $regex: new RegExp(search, "i") } },
+                { "assignedTo.username": { $regex: new RegExp(search, "i") } },
+                { "assignedTo.email": { $regex: new RegExp(search, "i") } },
+                { "assignedFor.username": { $regex: new RegExp(search, "i") } },
+                { "assignedFor.email": { $regex: new RegExp(search, "i") } },
+            ],
+        };
+
+        if (advancedSearch === true && search !== "") {
+            searchQuery = {
+                $or: search.split(',').map(criteria => {
+                    const [field, operator, value] = criteria.split(':');
+                    const regexValue = new RegExp(value, 'i');
+
+                    switch (operator) {
+                        case 'eq':
+                            return { [field]: value };
+                        case 'contains':
+                            return { [field]: { $regex: regexValue } };
+                        default:
+                            return { [field]: { $regex: regexValue } };
+                    }
+                }),
+            };
+        }
 
         // Fetch services with pagination
-        const services = await Service.find({})
+        const services = await Service.find(searchQuery)
             .skip((page - 1) * limit)
             .limit(Number(limit))
             .exec();
 
         // Count total services
-        const totalCount = await Service.countDocuments({}).exec();
+        const totalCount = await Service.countDocuments(searchQuery).exec();
 
         // Send both services and total count in the response
         res.status(200).send({

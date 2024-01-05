@@ -19,7 +19,27 @@ exports.getAllServices = async (req, res) => {
             ],
         };
 
-        if (advancedSearch === true && search !== "") {
+        if (advancedSearch === true && search !== "" && search.includes('&')) {
+            const criteriaList = search.split('&');
+
+            searchQuery = {
+                $and: criteriaList.map(criteria => {
+                    const [field, operator, value] = criteria.trim().split(':');
+                    const regexValue = new RegExp(value, 'i');
+
+                    switch (operator) {
+                        case 'eq':
+                            return { [field]: value };
+                        case 'contains':
+                            return { [field]: { $regex: regexValue } };
+                        default:
+                            return { [field]: { $regex: regexValue } };
+                    }
+                }),
+            };
+        }
+
+        else if (advancedSearch === true && search !== "") {
             searchQuery = {
                 $or: search.split(',').map(criteria => {
                     const [field, operator, value] = criteria.split(':');

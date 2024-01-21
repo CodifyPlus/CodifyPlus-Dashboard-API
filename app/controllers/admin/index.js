@@ -32,6 +32,7 @@ const { getTemplateNames } = require("./getTemplateNames");
 const { getTotalRevenueByService } = require("./getTotalRevenueByService");
 const { getServicesSoldData } = require("./getServicesSoldData");
 const { deleteTemplate } = require("./deleteTemplate");
+const { markOnHold } = require("./markOnHold");
 
 exports.getAllUsers = getAllUsers;
 exports.changeUserRole = changeUserRole;
@@ -67,3 +68,4 @@ exports.getTemplateNames = getTemplateNames;
 exports.getTotalRevenueByService = getTotalRevenueByService;
 exports.getServicesSoldData = getServicesSoldData;
 exports.deleteTemplate = deleteTemplate;
+exports.markOnHold = markOnHold;

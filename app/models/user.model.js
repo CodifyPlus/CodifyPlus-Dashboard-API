@@ -15,7 +15,7 @@ const UserSchema = new mongoose.Schema({
       name: String
     }
   ],
-  pendingServices: [
+  onHoldServices: [
     {
       serviceId: mongoose.Schema.Types.ObjectId,
       name: String

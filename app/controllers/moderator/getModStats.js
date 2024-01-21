@@ -8,7 +8,7 @@ exports.getModStats = async (req, res) => {
 
         // Extract relevant information from each service
         const completedServices = [];
-        const pendingServices = [];
+        const onHoldServices = [];
         const processServices = [];
 
         services.forEach((service) => {
@@ -22,8 +22,8 @@ exports.getModStats = async (req, res) => {
             // Categorize services based on their status
             if (service.status === 'Completed') {
                 completedServices.push(serviceInfo);
-            } else if (service.status === 'Process') {
-                pendingServices.push(serviceInfo);
+            } else if (service.status === 'On Hold') {
+                onHoldServices.push(serviceInfo);
             } else {
                 processServices.push(serviceInfo);
             }
@@ -32,7 +32,7 @@ exports.getModStats = async (req, res) => {
         // Create the response object
         const moderatorStats = {
             completedServices,
-            pendingServices,
+            onHoldServices,
             processServices,
         };
 

@@ -35,7 +35,7 @@ exports.addNewUser = async (req, res) => {
                 Password: <b>${password}</b>
                 <br>
                 <br>
-                <a href="dashboard.codifyplus.com"> Login Now!</a>
+                <a href="dashboard.StartupKro.com"> Login Now!</a>
             `;
 
             const emailContent = emailTemplate(contentForEmail);

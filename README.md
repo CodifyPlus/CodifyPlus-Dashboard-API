@@ -1,6 +1,6 @@
-## CodifyPlus Dashboard API
+## StartupKro Dashboard API
 
-This is the API for the CodifyPlus Dashboard. It is a RESTful API built with Node.js, Express, and MongoDB. 
+This is the API for the StartupKro Dashboard. It is a RESTful API built with Node.js, Express, and MongoDB. 
 
 - Looking to contribute in any way? Check out the [Contributing Guidelines](./CONTRIBUTING.md)
 - Facing a problem? Check out the [Issues Page]()
@@ -15,7 +15,7 @@ This is the API for the CodifyPlus Dashboard. It is a RESTful API built with Nod
 Obtain the following keys and add them to a `.env` file in the root directory of the project. Checkout the `.env.sample` file for reference.
 
 - `SECRET`: A random string used for signing JWT tokens
-- `DB_URL`: The URL of the MongoDB database. (Usually `mongodb://localhost:27017/codifyplus_dashboard`)
+- `DB_URL`: The URL of the MongoDB database. (Usually `mongodb://localhost:27017/startupkro_dashboard`)
 - `NOVU_API_KEY`: The API key for the Novu API. Obtain from [Novu](https://novu.co/)
 - `CORS_URL`: The URL of the frontend application. (Usually `http://localhost:3000`)
 - If you want to test email functionality, add the following keys as well:

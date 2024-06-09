@@ -37,7 +37,7 @@ db.mongoose
 
 // simple route
 app.get("/", (req, res) => {
-  res.json({ message: "Welcome to CodifyPlus CRM's API Server." });
+  res.json({ message: "Welcome to StartupKro Dashboard's API Server." });
 });
 
 // routes

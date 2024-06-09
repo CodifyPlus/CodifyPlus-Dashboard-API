@@ -15,7 +15,7 @@ async function sendEmail(userEmail, htmlContent, emailSubject) {
 
     // Define the email options
     const mailOptions = {
-      from: 'CodifyPlus Dashboard <' + process.env.SMTP_USER + '>', // Sender's email address
+      from: 'StartupKro Dashboard <' + process.env.SMTP_USER + '>', // Sender's email address
       to: userEmail, // Recipient's email address
       subject: emailSubject,
       html: htmlContent,

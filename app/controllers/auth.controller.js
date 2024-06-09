@@ -108,13 +108,13 @@ exports.forgotPassword = async (req, res) => {
 
     // Send an email with a link containing the resetToken
     const contentForEmail = `
-                Please use this link to securely reset your password. This link will remain active for <b>30 minutes</b>. This email is intended for <b>${user.username}</b>'s account associated with CodifyPlus.
+                Please use this link to securely reset your password. This link will remain active for <b>30 minutes</b>. This email is intended for <b>${user.username}</b>'s account associated with StartupKro.
                 <br>
                 <br>
                 <b>Please note, your new password must contain at least 8 characters, including an uppercase letter, a lowercase letter, and a number.</b>
                 <br>
                 <br>
-                <a href="https://dashboard.codifyplus.com/reset-password/${resetToken}">Reset Password</a>
+                <a href="https://dashboard.StartupKro.com/reset-password/${resetToken}">Reset Password</a>
                 <br>
                 <br>
                 If you did not request a password reset, please ignore this email.

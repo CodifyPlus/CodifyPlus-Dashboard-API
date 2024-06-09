@@ -76,7 +76,7 @@ exports.addNewService = async (req, res) => {
                 Cost: ${savedService.cost}
                 <br>
                 <br>
-                <a href="dashboard.codifyplus.com"> Login Now!</a>
+                <a href="dashboard.StartupKro.com"> Login Now!</a>
             `;
 
             const userEmailContent = emailTemplate(contentForUserEmail);
@@ -99,7 +99,7 @@ exports.addNewService = async (req, res) => {
                 <br>
                 User's Name: ${savedService.assignedFor.username}
                 <br>
-                <a href="dashboard.codifyplus.com"> Login Now!</a>
+                <a href="dashboard.StartupKro.com"> Login Now!</a>
             `;
 
             const assigneeEmailContent = emailTemplate(contentForAssigneeEmail);

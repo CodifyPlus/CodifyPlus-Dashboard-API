@@ -67,7 +67,7 @@ exports.editServiceDetails = async (req, res) => {
                 <br>
                 User's Name: ${updatedService.assignedFor.username}
                 <br>
-                <a href="dashboard.codifyplus.com"> Login Now!</a>
+                <a href="dashboard.StartupKro.com"> Login Now!</a>
             `;
 
             const emailContent = emailTemplate(contentForEmail);
